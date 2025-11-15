@@ -7,8 +7,18 @@ module.exports = {
     asarUnpack: '**/node_modules/sharp/**/*',
     name: 'ZED-ZEN Media Converter',
     executableName: 'ZedZen-Converter',
+    // Ensure Sharp is not pruned during packaging
+    ignore: (path) => {
+      if (!path) return false;
+      // Never ignore Sharp
+      if (path.includes('/sharp')) return false;
+      if (path.includes('\\sharp')) return false;
+      return false;
+    }
   },
-  rebuildConfig: {},
+  rebuildConfig: {
+    onlyModules: ['sharp']
+  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
