@@ -1,13 +1,6 @@
 module.exports = {
   entry: './src/main.js',
   target: 'electron-main',
-  externals: {
-    'sharp': 'commonjs sharp',
-    'fluent-ffmpeg': 'commonjs fluent-ffmpeg',
-    'pdf-lib': 'commonjs pdf-lib',
-    'mammoth': 'commonjs mammoth',
-    'docx': 'commonjs docx'
-  },
   module: {
     rules: [
       {
@@ -18,5 +11,12 @@ module.exports = {
         }
       }
     ]
+  },
+  externals: {
+    'sharp': 'commonjs2 sharp',
+    'fluent-ffmpeg': 'commonjs2 fluent-ffmpeg',
+    'pdf-lib': 'commonjs2 pdf-lib',
+    'mammoth': 'commonjs2 mammoth',
+    'docx': 'commonjs2 docx'
   }
 };

@@ -1,5 +1,6 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const ForgeExternalsPlugin = require('@timfish/forge-externals-plugin');
 
 module.exports = {
   packagerConfig: {
@@ -44,6 +45,10 @@ module.exports = {
         },
       },
     },
+    new ForgeExternalsPlugin({
+      externals: ['sharp', 'fluent-ffmpeg', 'pdf-lib', 'mammoth', 'docx'],
+      includeDeps: true
+    }),
     new FusesPlugin({
       version: FuseVersion.V1,
       [FuseV1Options.RunAsNode]: false,
