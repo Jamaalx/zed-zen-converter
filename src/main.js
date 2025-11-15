@@ -7,9 +7,55 @@ const { PDFDocument, rgb } = require('pdf-lib');
 const mammoth = require('mammoth');
 const { Document, Packer, Paragraph, TextRun } = require('docx');
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit();
+// Handle Squirrel events on Windows
+if (process.platform === 'win32') {
+  const handleSquirrelEvent = () => {
+    if (process.argv.length === 1) {
+      return false;
+    }
+
+    const appFolder = path.resolve(process.execPath, '..');
+    const rootAtomFolder = path.resolve(appFolder, '..');
+    const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+    const exeName = path.basename(process.execPath);
+
+    const spawn = (command, args) => {
+      let spawnedProcess;
+      try {
+        spawnedProcess = require('child_process').spawn(command, args, { detached: true });
+      } catch (error) {
+        console.error('Error spawning process:', error);
+      }
+      return spawnedProcess;
+    };
+
+    const squirrelEvent = process.argv[1];
+    switch (squirrelEvent) {
+      case '--squirrel-install':
+      case '--squirrel-updated':
+        // Create desktop and start menu shortcuts
+        spawn(updateDotExe, ['--createShortcut', exeName]);
+        setTimeout(app.quit, 1000);
+        return true;
+
+      case '--squirrel-uninstall':
+        // Remove desktop and start menu shortcuts
+        spawn(updateDotExe, ['--removeShortcut', exeName]);
+        setTimeout(app.quit, 1000);
+        return true;
+
+      case '--squirrel-obsolete':
+        app.quit();
+        return true;
+    }
+
+    return false;
+  };
+
+  if (handleSquirrelEvent()) {
+    // Squirrel event handled, exit early
+    process.exit(0);
+  }
 }
 
 let mainWindow;

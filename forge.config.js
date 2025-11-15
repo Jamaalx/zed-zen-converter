@@ -71,9 +71,6 @@ module.exports = {
         description: 'Free media converter for images, videos, and documents',
         noMsi: true,
         setupExe: 'ZedZen-Media-Converter-Setup.exe',
-        // Create desktop and start menu shortcuts
-        createDesktopShortcut: true,
-        createStartMenuShortcut: true,
       },
     },
   ],
