@@ -1,5 +1,6 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const path = require('path');
 
 module.exports = {
   packagerConfig: {
@@ -9,6 +10,21 @@ module.exports = {
   },
   rebuildConfig: {
     onlyModules: ['sharp']
+  },
+  hooks: {
+    packageAfterCopy: async (config, buildPath) => {
+      const fs = require('fs');
+      const srcSharp = path.join(__dirname, 'node_modules', 'sharp');
+      const destSharp = path.join(buildPath, 'node_modules', 'sharp');
+
+      console.log('Copying Sharp from:', srcSharp);
+      console.log('Copying Sharp to:', destSharp);
+
+      // Copy Sharp and all its dependencies
+      fs.cpSync(srcSharp, destSharp, { recursive: true });
+
+      console.log('Sharp copied successfully');
+    }
   },
   makers: [
     {
