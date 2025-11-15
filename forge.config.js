@@ -8,7 +8,7 @@ module.exports = {
     executableName: 'ZedZen-Converter',
   },
   rebuildConfig: {
-    force: false, // Nu forța rebuild
+    onlyModules: ['sharp'],
   },
   makers: [
     {

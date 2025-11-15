@@ -3,14 +3,13 @@
   "productName": "ZED-ZEN Media Converter",
   "version": "1.0.0",
   "description": "Professional media conversion tool by ZED-ZEN",
-  "main": ".vite/build/main.js",
+  "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .js,.jsx .",
-    "postinstall": "electron-rebuild -f -w sharp"
+    "lint": "eslint --ext .js,.jsx ."
   },
   "keywords": [
     "media",
