@@ -71,9 +71,6 @@ module.exports = {
         description: 'Free media converter for images, videos, and documents',
         noMsi: true,
         setupExe: 'ZedZen-Media-Converter-Setup.exe',
-        loadingGif: './build/install-spinner.gif',
-        setupIcon: './build/icon.ico',
-        iconUrl: 'https://zed-zen.com/icon.ico',
         // Create desktop and start menu shortcuts
         createDesktopShortcut: true,
         createStartMenuShortcut: true,
