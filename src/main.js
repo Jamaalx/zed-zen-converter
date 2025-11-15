@@ -3,7 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const { PDFDocument, rgb } = require('pdf-lib');
+const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const { Document, Packer, Paragraph, TextRun } = require('docx');
 
@@ -57,6 +59,9 @@ if (process.platform === 'win32') {
     process.exit(0);
   }
 }
+
+// Set FFmpeg path for video conversions using @ffmpeg-installer/ffmpeg
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 let mainWindow;
 
@@ -196,7 +201,7 @@ async function convertImage(inputPath, outputPath, format, quality) {
         sharpInstance = sharpInstance.toFormat('bmp');
         break;
       case 'svg':
-        throw new Error('Cannot convert raster image to SVG');
+        throw new Error('Cannot convert raster images (PNG, JPG, etc.) to vector SVG format. SVG can only be created from vector sources or through manual tracing.');
       default:
         throw new Error(`Unsupported image format: ${format}`);
     }
@@ -257,16 +262,23 @@ function convertVideo(inputPath, outputPath, format, quality) {
 async function convertPdfToDocx(inputPath, outputPath) {
   try {
     const pdfBytes = fs.readFileSync(inputPath);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    const pages = pdfDoc.getPages();
-    
-    let fullText = `Converted from PDF: ${path.basename(inputPath)}\n\n`;
-    fullText += `[PDF has ${pages.length} pages - text extraction limited]\n\n`;
-    
+
+    // Extract text from PDF using pdf-parse
+    const pdfData = await pdfParse(pdfBytes);
+    const extractedText = pdfData.text || 'No text could be extracted from this PDF';
+
+    // Create DOCX with extracted text
+    const paragraphs = extractedText.split('\n\n').map(para =>
+      new Paragraph({
+        children: [new TextRun({ text: para.trim() })],
+        spacing: { after: 200 }
+      })
+    );
+
     const doc = new Document({
       sections: [{
         properties: {},
-        children: [new Paragraph({ children: [new TextRun({ text: fullText, size: 24 })] })],
+        children: paragraphs,
       }],
     });
 

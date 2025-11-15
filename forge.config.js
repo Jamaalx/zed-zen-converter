@@ -15,7 +15,10 @@ module.exports = {
     packageAfterCopy: async (config, buildPath) => {
       const fs = require('fs');
 
-      console.log('Copying Sharp and ALL its dependencies...');
+      console.log('Copying Sharp, FFmpeg, and PDF dependencies...');
+
+      // Also copy ffmpeg and pdf-parse dependencies explicitly
+      const criticalModules = ['sharp', '@ffmpeg-installer', 'pdf-parse'];
 
       // Function to recursively get all dependencies from package.json
       const getAllDependencies = (moduleName, visited = new Set()) => {
@@ -42,8 +45,12 @@ module.exports = {
         return visited;
       };
 
-      // Get all Sharp dependencies recursively
-      const allModules = getAllDependencies('sharp');
+      // Get all dependencies for critical modules
+      const allModules = new Set();
+      for (const moduleName of criticalModules) {
+        const deps = getAllDependencies(moduleName);
+        deps.forEach(dep => allModules.add(dep));
+      }
 
       console.log(`Found ${allModules.size} modules to copy`);
 
