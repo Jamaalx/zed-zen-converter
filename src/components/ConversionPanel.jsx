@@ -142,9 +142,9 @@ function ConversionPanel({
         <div className="flex gap-2">
           <button
             onClick={onSelectFolder}
-            className="flex-1 p-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-left transition-colors flex items-center justify-between group"
+            className="flex-1 min-w-0 p-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-left transition-colors flex items-center justify-between group overflow-hidden"
           >
-            <span className="text-sm text-gray-400 truncate">
+            <span className="text-sm text-gray-400 truncate block max-w-full">
               {outputFolder || 'Click to select folder...'}
             </span>
             <svg className="w-5 h-5 text-gray-500 group-hover:text-zedzen-purple transition-colors flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

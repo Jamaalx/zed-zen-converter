@@ -218,7 +218,7 @@ async function convertImage(inputPath, outputPath, format, quality) {
 function convertVideo(inputPath, outputPath, format, quality) {
   return new Promise((resolve, reject) => {
     const outputDir = path.dirname(outputPath);
-    
+
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
@@ -227,24 +227,66 @@ function convertVideo(inputPath, outputPath, format, quality) {
 
     let command = ffmpeg(inputPath);
 
+    // Use faster preset and multi-threading for speed
+    const fastPreset = 'veryfast'; // ultrafast, superfast, veryfast, faster
+    const threads = 0; // 0 = auto-detect CPU cores
+
     switch (format.toLowerCase()) {
       case 'mp4':
-        command = command.outputOptions(['-c:v libx264', `-crf ${crf}`, '-preset medium', '-c:a aac', '-b:a 128k']);
+        command = command.outputOptions([
+          '-c:v libx264',
+          `-crf ${crf}`,
+          `-preset ${fastPreset}`,
+          `-threads ${threads}`,
+          '-c:a aac',
+          '-b:a 128k'
+        ]);
         break;
       case 'webm':
-        command = command.outputOptions(['-c:v libvpx-vp9', `-crf ${crf}`, '-b:v 0', '-c:a libopus', '-b:a 128k']);
+        command = command.outputOptions([
+          '-c:v libvpx-vp9',
+          `-crf ${crf}`,
+          '-b:v 0',
+          `-threads ${threads}`,
+          '-speed 4', // 0=slowest, 4=good balance, 8=fastest
+          '-c:a libopus',
+          '-b:a 128k'
+        ]);
         break;
       case 'avi':
-        command = command.outputOptions(['-c:v mpeg4', `-q:v ${Math.round((100 - quality) / 10) + 1}`, '-c:a mp3', '-b:a 128k']);
+        command = command.outputOptions([
+          '-c:v mpeg4',
+          `-q:v ${Math.round((100 - quality) / 10) + 1}`,
+          `-threads ${threads}`,
+          '-c:a mp3',
+          '-b:a 128k'
+        ]);
         break;
       case 'mkv':
-        command = command.outputOptions(['-c:v libx264', `-crf ${crf}`, '-preset medium', '-c:a aac', '-b:a 128k']);
+        command = command.outputOptions([
+          '-c:v libx264',
+          `-crf ${crf}`,
+          `-preset ${fastPreset}`,
+          `-threads ${threads}`,
+          '-c:a aac',
+          '-b:a 128k'
+        ]);
         break;
       case 'mov':
-        command = command.outputOptions(['-c:v libx264', `-crf ${crf}`, '-preset medium', '-c:a aac', '-b:a 128k']);
+        command = command.outputOptions([
+          '-c:v libx264',
+          `-crf ${crf}`,
+          `-preset ${fastPreset}`,
+          `-threads ${threads}`,
+          '-c:a aac',
+          '-b:a 128k'
+        ]);
         break;
       case 'gif':
-        command = command.outputOptions(['-vf fps=15,scale=480:-1:flags=lanczos', '-c:v gif']);
+        command = command.outputOptions([
+          '-vf fps=15,scale=480:-1:flags=lanczos',
+          '-c:v gif'
+        ]);
         break;
       default:
         return reject(new Error(`Unsupported video format: ${format}`));
