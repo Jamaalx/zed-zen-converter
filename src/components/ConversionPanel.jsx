@@ -242,7 +242,7 @@ function ConversionPanel({
           </p>
           <button
             onClick={() => {
-              require('electron').shell.openExternal('https://zed-zen.com');
+              window.electronAPI.openExternal('https://zed-zen.com');
             }}
             className="text-xs text-zedzen-green hover:text-zedzen-yellow transition-colors cursor-pointer font-semibold"
           >

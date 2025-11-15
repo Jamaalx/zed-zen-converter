@@ -4,7 +4,7 @@ function PrivacyModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const openLink = (url) => {
-    require('electron').shell.openExternal(url);
+    window.electronAPI.openExternal(url);
   };
 
   return (

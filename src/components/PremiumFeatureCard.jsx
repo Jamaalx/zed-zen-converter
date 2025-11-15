@@ -4,7 +4,7 @@ function PremiumFeatureCard({ feature, icon, description }) {
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   const openLink = (url) => {
-    require('electron').shell.openExternal(url);
+    window.electronAPI.openExternal(url);
   };
 
   return (

@@ -1,6 +1,6 @@
 function Footer({ onTermsClick, onPrivacyClick }) {
   const openLink = (url) => {
-    require('electron').shell.openExternal(url);
+    window.electronAPI.openExternal(url);
   };
 
   return (

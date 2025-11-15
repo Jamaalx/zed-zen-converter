@@ -35,7 +35,7 @@ function PopupManager({ conversionsThisSession }) {
   }, [activePopup]);
 
   const openLink = (url) => {
-    require('electron').shell.openExternal(url);
+    window.electronAPI.openExternal(url);
   };
 
   const closePopup = () => {

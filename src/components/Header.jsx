@@ -2,7 +2,7 @@ import React from 'react';
 
 function Header({ onAboutClick }) {
   const openLink = (url) => {
-    require('electron').shell.openExternal(url);
+    window.electronAPI.openExternal(url);
   };
 
   return (
