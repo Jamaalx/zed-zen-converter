@@ -9,14 +9,11 @@ module.exports = {
         use: {
           loader: 'babel-loader'
         }
+      },
+      {
+        test: /\.node$/,
+        loader: 'node-loader'
       }
     ]
-  },
-  externals: {
-    'sharp': 'commonjs2 sharp',
-    'fluent-ffmpeg': 'commonjs2 fluent-ffmpeg',
-    'pdf-lib': 'commonjs2 pdf-lib',
-    'mammoth': 'commonjs2 mammoth',
-    'docx': 'commonjs2 docx'
   }
 };
