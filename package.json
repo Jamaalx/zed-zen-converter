@@ -1,0 +1,59 @@
+{
+  "name": "zedzen-media-converter",
+  "productName": "ZED-ZEN Media Converter",
+  "version": "1.0.0",
+  "description": "Professional media conversion tool by ZED-ZEN",
+  "main": ".vite/build/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "eslint --ext .js,.jsx .",
+    "postinstall": "electron-rebuild -f -w sharp"
+  },
+  "keywords": [
+    "media",
+    "converter",
+    "zedzen",
+    "image",
+    "video"
+  ],
+  "author": "ZED-ZEN / Fortitudo Vincit SRL",
+  "license": "MIT",
+  "dependencies": {
+    "@electron/remote": "^2.1.2",
+    "docx": "^9.5.1",
+    "electron-squirrel-startup": "^1.0.1",
+    "fluent-ffmpeg": "^2.1.3",
+    "mammoth": "^1.11.0",
+    "officegen": "^0.6.5",
+    "pdf-lib": "^1.17.1",
+    "pdf2pic": "^3.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.33.5",
+    "to-ico": "^1.1.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
+    "@electron-forge/cli": "^7.5.0",
+    "@electron-forge/maker-squirrel": "^7.5.0",
+    "@electron-forge/maker-zip": "^7.5.0",
+    "@electron-forge/plugin-fuses": "^7.5.0",
+    "@electron-forge/plugin-webpack": "^7.10.2",
+    "@electron/rebuild": "^3.7.2",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "electron": "32.2.5",
+    "electron-winstaller": "^5.4.0",
+    "postcss": "^8.4.49",
+    "style-loader": "^4.0.0",
+    "tailwindcss": "^3.4.17",
+    "vite": "^5.4.11",
+    "webpack-dev-server": "^5.2.2"
+  }
+}

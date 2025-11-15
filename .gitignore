@@ -1,0 +1,27 @@
+cat .gitignore
+```
+
+Ar trebui să conțină `node_modules/`. Dacă nu, creează:
+```
+# Dependencies
+node_modules/
+
+# Build outputs
+out/
+.webpack/
+dist/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*

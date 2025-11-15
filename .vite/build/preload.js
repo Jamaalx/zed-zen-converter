@@ -1,0 +1,1 @@
+"use strict";const{contextBridge:i,ipcRenderer:o}=require("electron");i.exposeInMainWorld("electronAPI",{selectFiles:()=>o.invoke("select-files"),selectFolder:()=>o.invoke("select-folder"),getFileInfo:e=>o.invoke("get-file-info",e),convertFile:e=>o.invoke("convert-file",e),openFolder:e=>o.invoke("open-folder",e)});
