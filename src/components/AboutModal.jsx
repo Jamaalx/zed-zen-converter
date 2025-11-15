@@ -1,6 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 function AboutModal({ isOpen, onClose }) {
+  const [systemInfo, setSystemInfo] = useState(null);
+  const [showSystemInfo, setShowSystemInfo] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Fetch system information when modal opens
+      window.electronAPI.getSystemInfo().then(info => {
+        setSystemInfo(info);
+      }).catch(err => {
+        console.error('Failed to get system info:', err);
+      });
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const openLink = (url) => {
@@ -181,6 +195,63 @@ function AboutModal({ isOpen, onClose }) {
               <span className="px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-300">Sharp</span>
               <span className="px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-300">Tailwind CSS</span>
             </div>
+          </div>
+
+          {/* System Information */}
+          <div>
+            <button
+              onClick={() => setShowSystemInfo(!showSystemInfo)}
+              className="w-full flex items-center justify-between text-lg font-semibold text-white mb-3 hover:text-zedzen-purple transition-colors"
+            >
+              <span>System Information</span>
+              <svg
+                className={`w-5 h-5 transition-transform ${showSystemInfo ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showSystemInfo && systemInfo && (
+              <div className="bg-gray-800 rounded-xl p-4 space-y-2">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-400">App Version:</span>
+                    <p className="text-white font-medium">{systemInfo.appVersion}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Electron:</span>
+                    <p className="text-white font-medium">{systemInfo.electronVersion}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Node.js:</span>
+                    <p className="text-white font-medium">{systemInfo.nodeVersion}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Chromium:</span>
+                    <p className="text-white font-medium">{systemInfo.chromiumVersion}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Platform:</span>
+                    <p className="text-white font-medium">{systemInfo.platform} ({systemInfo.arch})</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">OS Version:</span>
+                    <p className="text-white font-medium">{systemInfo.osVersion}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-400">Sharp (Image Processing):</span>
+                    <p className="text-white font-medium">{systemInfo.sharpVersion}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-400">FFmpeg Path:</span>
+                    <p className="text-white font-mono text-xs break-all">{systemInfo.ffmpegPath}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Support & Feedback */}

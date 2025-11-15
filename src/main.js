@@ -142,6 +142,22 @@ ipcMain.handle('get-file-info', async (event, filePath) => {
   };
 });
 
+ipcMain.handle('get-system-info', async () => {
+  const os = require('os');
+
+  return {
+    appVersion: app.getVersion(),
+    electronVersion: process.versions.electron,
+    nodeVersion: process.versions.node,
+    chromiumVersion: process.versions.chrome,
+    platform: os.platform(),
+    arch: os.arch(),
+    osVersion: os.release(),
+    ffmpegPath: ffmpegInstaller.path,
+    sharpVersion: `libvips ${sharp.versions.vips}`,
+  };
+});
+
 // ============= IMAGE CONVERSION =============
 async function convertImage(inputPath, outputPath, format, quality) {
   try {

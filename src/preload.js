@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   convertFile: (options) => ipcRenderer.invoke('convert-file', options),
   openFolder: (folderPath) => ipcRenderer.invoke('open-folder', folderPath),
   openExternal: (url) => shell.openExternal(url),
+  getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
 });
