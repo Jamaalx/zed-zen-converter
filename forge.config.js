@@ -3,18 +3,9 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
-    asar: true,
-    asarUnpack: '**/node_modules/sharp/**/*',
+    asar: false,
     name: 'ZED-ZEN Media Converter',
     executableName: 'ZedZen-Converter',
-    // Ensure Sharp is not pruned during packaging
-    ignore: (path) => {
-      if (!path) return false;
-      // Never ignore Sharp
-      if (path.includes('/sharp')) return false;
-      if (path.includes('\\sharp')) return false;
-      return false;
-    }
   },
   rebuildConfig: {
     onlyModules: ['sharp']
@@ -59,7 +50,7 @@ module.exports = {
       [FuseV1Options.EnableCookieEncryption]: true,
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
       [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: false,
       [FuseV1Options.OnlyLoadAppFromAsar]: false,
     }),
   ],
