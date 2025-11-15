@@ -9,10 +9,6 @@ module.exports = {
         use: {
           loader: 'babel-loader'
         }
-      },
-      {
-        test: /\.node$/,
-        loader: 'node-loader'
       }
     ]
   }
