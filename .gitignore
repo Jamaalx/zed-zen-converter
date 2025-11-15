@@ -25,3 +25,6 @@ Thumbs.db
 
 # Logs
 npm-debug.log*
+
+.vite/
+.webpack/
