@@ -15,7 +15,7 @@ module.exports = {
     packageAfterCopy: async (config, buildPath) => {
       const fs = require('fs');
 
-      // List of modules to copy (Sharp + its runtime dependencies)
+      // List of modules to copy (Sharp + its runtime dependencies + platform binaries)
       const modulesToCopy = [
         'sharp',
         'detect-libc',
@@ -24,7 +24,9 @@ module.exports = {
         'color-name',
         'simple-swizzle',
         'is-arrayish',
-        'semver'
+        'semver',
+        '@img/sharp-win32-x64',  // Sharp's Windows x64 native bindings
+        '@img/sharp-libvips-win32-x64'  // Sharp's libvips prebuilt binary
       ];
 
       console.log('Copying Sharp and dependencies...');
