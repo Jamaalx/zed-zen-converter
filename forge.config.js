@@ -15,35 +15,51 @@ module.exports = {
     packageAfterCopy: async (config, buildPath) => {
       const fs = require('fs');
 
-      // List of modules to copy (Sharp + its runtime dependencies + platform binaries)
-      const modulesToCopy = [
-        'sharp',
-        'detect-libc',
-        'color',
-        'color-string',
-        'color-name',
-        'simple-swizzle',
-        'is-arrayish',
-        'semver',
-        '@img/sharp-win32-x64',  // Sharp's Windows x64 native bindings
-        '@img/sharp-libvips-win32-x64'  // Sharp's libvips prebuilt binary
-      ];
+      console.log('Copying Sharp and ALL its dependencies...');
 
-      console.log('Copying Sharp and dependencies...');
+      // Function to recursively get all dependencies from package.json
+      const getAllDependencies = (moduleName, visited = new Set()) => {
+        if (visited.has(moduleName)) return visited;
+        visited.add(moduleName);
 
-      for (const moduleName of modulesToCopy) {
+        const pkgPath = path.join(__dirname, 'node_modules', moduleName, 'package.json');
+        if (!fs.existsSync(pkgPath)) return visited;
+
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          const deps = {
+            ...pkg.dependencies,
+            ...pkg.optionalDependencies
+          };
+
+          for (const dep in deps) {
+            getAllDependencies(dep, visited);
+          }
+        } catch (err) {
+          console.log(`⚠ Error reading ${moduleName}/package.json:`, err.message);
+        }
+
+        return visited;
+      };
+
+      // Get all Sharp dependencies recursively
+      const allModules = getAllDependencies('sharp');
+
+      console.log(`Found ${allModules.size} modules to copy`);
+
+      // Copy all modules
+      let copiedCount = 0;
+      for (const moduleName of allModules) {
         const srcModule = path.join(__dirname, 'node_modules', moduleName);
         const destModule = path.join(buildPath, 'node_modules', moduleName);
 
         if (fs.existsSync(srcModule)) {
           fs.cpSync(srcModule, destModule, { recursive: true });
-          console.log(`✓ Copied ${moduleName}`);
-        } else {
-          console.log(`⚠ ${moduleName} not found, skipping`);
+          copiedCount++;
         }
       }
 
-      console.log('Sharp and dependencies copied successfully');
+      console.log(`✓ Copied ${copiedCount} modules for Sharp`);
     }
   },
   makers: [
