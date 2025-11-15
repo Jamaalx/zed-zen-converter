@@ -14,16 +14,34 @@ module.exports = {
   hooks: {
     packageAfterCopy: async (config, buildPath) => {
       const fs = require('fs');
-      const srcSharp = path.join(__dirname, 'node_modules', 'sharp');
-      const destSharp = path.join(buildPath, 'node_modules', 'sharp');
 
-      console.log('Copying Sharp from:', srcSharp);
-      console.log('Copying Sharp to:', destSharp);
+      // List of modules to copy (Sharp + its runtime dependencies)
+      const modulesToCopy = [
+        'sharp',
+        'detect-libc',
+        'color',
+        'color-string',
+        'color-name',
+        'simple-swizzle',
+        'is-arrayish',
+        'semver'
+      ];
 
-      // Copy Sharp and all its dependencies
-      fs.cpSync(srcSharp, destSharp, { recursive: true });
+      console.log('Copying Sharp and dependencies...');
 
-      console.log('Sharp copied successfully');
+      for (const moduleName of modulesToCopy) {
+        const srcModule = path.join(__dirname, 'node_modules', moduleName);
+        const destModule = path.join(buildPath, 'node_modules', moduleName);
+
+        if (fs.existsSync(srcModule)) {
+          fs.cpSync(srcModule, destModule, { recursive: true });
+          console.log(`✓ Copied ${moduleName}`);
+        } else {
+          console.log(`⚠ ${moduleName} not found, skipping`);
+        }
+      }
+
+      console.log('Sharp and dependencies copied successfully');
     }
   },
   makers: [
