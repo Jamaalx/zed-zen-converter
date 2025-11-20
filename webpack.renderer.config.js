@@ -40,7 +40,10 @@ module.exports = {
     extensions: ['.js', '.jsx'],
     fallback: {
       "path": false,
-      "fs": false
+      "fs": false,
+      "events": false,
+      "util": false,
+      "stream": false
     }
   }
 };
