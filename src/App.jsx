@@ -214,8 +214,6 @@ function App() {
             isConverting={isConverting}
             fileCount={files.length}
             files={files}
-            compressionMode={compressionMode}
-            setCompressionMode={setCompressionMode}
             resizeEnabled={resizeEnabled}
             setResizeEnabled={setResizeEnabled}
             resizeWidth={resizeWidth}
