@@ -23,6 +23,12 @@ function App() {
   const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
   const [compressionMode, setCompressionMode] = useState(false);
 
+  // Resize state
+  const [resizeEnabled, setResizeEnabled] = useState(false);
+  const [resizeWidth, setResizeWidth] = useState(null);
+  const [resizeHeight, setResizeHeight] = useState(null);
+  const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
+
   const handleFilesAdded = async (newFiles) => {
     const fileInfoPromises = newFiles.map(async (filePath) => {
       const info = await window.electronAPI.getFileInfo(filePath);
@@ -89,7 +95,12 @@ function App() {
           format: finalFormat,
           quality: quality,
           fileName: file.name,
-          compressionOnly: compressionMode
+          compressionOnly: compressionMode,
+          resize: resizeEnabled ? {
+            width: resizeWidth,
+            height: resizeHeight,
+            maintainAspectRatio: maintainAspectRatio
+          } : null
         });
         
         if (result.success) {
@@ -205,6 +216,14 @@ function App() {
             files={files}
             compressionMode={compressionMode}
             setCompressionMode={setCompressionMode}
+            resizeEnabled={resizeEnabled}
+            setResizeEnabled={setResizeEnabled}
+            resizeWidth={resizeWidth}
+            setResizeWidth={setResizeWidth}
+            resizeHeight={resizeHeight}
+            setResizeHeight={setResizeHeight}
+            maintainAspectRatio={maintainAspectRatio}
+            setMaintainAspectRatio={setMaintainAspectRatio}
           />
         </div>
       </div>

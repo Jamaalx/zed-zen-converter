@@ -1,16 +1,24 @@
 import React from 'react';
 
-function ConversionPanel({ 
-  outputFormat, 
-  setOutputFormat, 
-  quality, 
-  setQuality, 
-  outputFolder, 
-  onSelectFolder, 
+function ConversionPanel({
+  outputFormat,
+  setOutputFormat,
+  quality,
+  setQuality,
+  outputFolder,
+  onSelectFolder,
   onStartConversion,
   isConverting,
   fileCount,
-  files = [] // Add files prop to detect file types
+  files = [], // Add files prop to detect file types
+  resizeEnabled,
+  setResizeEnabled,
+  resizeWidth,
+  setResizeWidth,
+  resizeHeight,
+  setResizeHeight,
+  maintainAspectRatio,
+  setMaintainAspectRatio
 }) {
   // All available formats with categories
   const allFormats = [
@@ -156,6 +164,103 @@ function ConversionPanel({
             <span>Lower size</span>
             <span>Higher quality</span>
           </div>
+        </div>
+      )}
+
+      {/* Resize Options */}
+      {['webp', 'jpg', 'jpeg', 'png', 'avif', 'bmp'].includes(outputFormat) && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-gray-300">
+              Resize Image
+            </label>
+            <button
+              onClick={() => setResizeEnabled(!resizeEnabled)}
+              className={`
+                relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                ${resizeEnabled ? 'bg-zedzen-purple' : 'bg-gray-700'}
+              `}
+            >
+              <span
+                className={`
+                  inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                  ${resizeEnabled ? 'translate-x-6' : 'translate-x-1'}
+                `}
+              />
+            </button>
+          </div>
+
+          {resizeEnabled && (
+            <div className="space-y-3 p-3 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700">
+              {/* Dimension Inputs */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Width (px)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={resizeWidth || ''}
+                    onChange={(e) => setResizeWidth(e.target.value ? parseInt(e.target.value) : null)}
+                    placeholder="Auto"
+                    className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-zedzen-purple"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Height (px)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={resizeHeight || ''}
+                    onChange={(e) => setResizeHeight(e.target.value ? parseInt(e.target.value) : null)}
+                    placeholder="Auto"
+                    className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-sm text-white focus:outline-none focus:border-zedzen-purple"
+                  />
+                </div>
+              </div>
+
+              {/* Maintain Aspect Ratio */}
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={maintainAspectRatio}
+                  onChange={(e) => setMaintainAspectRatio(e.target.checked)}
+                  className="w-4 h-4 text-zedzen-purple bg-gray-900 border-gray-600 rounded focus:ring-zedzen-purple focus:ring-2"
+                />
+                <span className="ml-2 text-xs text-gray-300">Maintain aspect ratio</span>
+              </label>
+
+              {/* Quick Size Presets */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-2">Quick Sizes</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { size: 64, label: '64×64' },
+                    { size: 128, label: '128×128' },
+                    { size: 256, label: '256×256' },
+                    { size: 512, label: '512×512' },
+                    { size: 1024, label: '1024×1024' },
+                    { size: 2048, label: '2048×2048' }
+                  ].map(preset => (
+                    <button
+                      key={preset.size}
+                      onClick={() => {
+                        setResizeWidth(preset.size);
+                        setResizeHeight(preset.size);
+                        setMaintainAspectRatio(false);
+                      }}
+                      className="px-2 py-1.5 bg-gray-900 hover:bg-gray-700 border border-gray-600 hover:border-zedzen-purple rounded text-xs text-gray-300 hover:text-white transition-colors"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500">
+                💡 Leave width or height empty for auto-calculation
+              </p>
+            </div>
+          )}
         </div>
       )}
 

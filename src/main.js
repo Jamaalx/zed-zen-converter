@@ -159,10 +159,10 @@ ipcMain.handle('get-system-info', async () => {
 });
 
 // ============= IMAGE CONVERSION =============
-async function convertImage(inputPath, outputPath, format, quality) {
+async function convertImage(inputPath, outputPath, format, quality, resize = null) {
   try {
     const outputDir = path.dirname(outputPath);
-    
+
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
@@ -176,7 +176,17 @@ async function convertImage(inputPath, outputPath, format, quality) {
       }
       const svgBuffer = fs.readFileSync(inputPath);
       let sharpInstance = sharp(svgBuffer, { density: 300 });
-      
+
+      // Apply resize if enabled
+      if (resize && (resize.width || resize.height)) {
+        const resizeOptions = {
+          width: resize.width || null,
+          height: resize.height || null,
+          fit: resize.maintainAspectRatio ? 'inside' : 'fill'
+        };
+        sharpInstance = sharpInstance.resize(resizeOptions);
+      }
+
       switch (format.toLowerCase()) {
         case 'png':
           await sharpInstance.png({ quality }).toFile(outputPath);
@@ -196,6 +206,16 @@ async function convertImage(inputPath, outputPath, format, quality) {
 
     let sharpInstance = sharp(inputPath);
 
+    // Apply resize if enabled
+    if (resize && (resize.width || resize.height)) {
+      const resizeOptions = {
+        width: resize.width || null,
+        height: resize.height || null,
+        fit: resize.maintainAspectRatio ? 'inside' : 'fill'
+      };
+      sharpInstance = sharpInstance.resize(resizeOptions);
+    }
+
     switch (format.toLowerCase()) {
       case 'webp':
         sharpInstance = sharpInstance.webp({ quality });
@@ -205,9 +225,9 @@ async function convertImage(inputPath, outputPath, format, quality) {
         sharpInstance = sharpInstance.jpeg({ quality });
         break;
       case 'png':
-        sharpInstance = sharpInstance.png({ 
+        sharpInstance = sharpInstance.png({
           compressionLevel: Math.floor((100 - quality) / 10),
-          quality 
+          quality
         });
         break;
       case 'avif':
@@ -414,19 +434,19 @@ async function convertTxtToPdf(inputPath, outputPath) {
 
 // ============= MAIN CONVERSION HANDLER =============
 ipcMain.handle('convert-file', async (event, options) => {
-  const { inputPath, outputFolder, format, quality } = options;
-  
+  const { inputPath, outputFolder, format, quality, resize } = options;
+
   try {
     const baseName = path.basename(inputPath, path.extname(inputPath));
     const outputPath = path.join(outputFolder, `${baseName}.${format}`);
     const ext = path.extname(inputPath).toLowerCase();
-    
+
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.svg'];
     const videoExtensions = ['.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv', '.wmv'];
     const docExtensions = ['.pdf', '.docx', '.doc', '.txt'];
-    
+
     if (imageExtensions.includes(ext)) {
-      await convertImage(inputPath, outputPath, format, quality);
+      await convertImage(inputPath, outputPath, format, quality, resize);
       const stats = fs.statSync(outputPath);
       return { success: true, outputPath, outputSize: stats.size };
     } 
