@@ -1,5 +1,12 @@
 # ZED-ZEN Media Converter
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Electron](https://img.shields.io/badge/Electron-32.2.5-47848F?logo=electron)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react)](https://react.dev/)
+[![Security](https://img.shields.io/badge/Security-Audited-brightgreen)](./SECURITY.md)
+[![No Tracking](https://img.shields.io/badge/Tracking-None-blue)](./SECURITY.md)
+[![Offline](https://img.shields.io/badge/Works-100%25%20Offline-orange)](./SECURITY.md)
+
 Professional media conversion tool powered by FFmpeg and Sharp.
 
 **100% Offline | No Data Collection | Open Source**
