@@ -12,6 +12,9 @@
     "generate-assets": "node scripts/generate-installer-assets.js",
     "make:nsis": "npm run generate-icon && npm run generate-assets && electron-forge package && electron-builder --config electron-builder.config.js --win nsis --prepackaged \"out/ZED-ZEN Media Converter-win32-x64\"",
     "build:installer": "electron-builder --config electron-builder.config.js --win nsis --prepackaged \"out/ZED-ZEN Media Converter-win32-x64\"",
+    "make:mac": "npm run generate-icon && npm run generate-assets && electron-builder --config electron-builder.config.js --mac",
+    "make:linux": "npm run generate-icon && npm run generate-assets && electron-builder --config electron-builder.config.js --linux",
+    "make:all": "npm run generate-icon && npm run generate-assets && electron-builder --config electron-builder.config.js --win --mac --linux",
     "dist": "npm run generate-assets && electron-builder --config electron-builder.config.js",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .js,.jsx ."
