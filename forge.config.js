@@ -112,27 +112,7 @@ module.exports = {
     }
   },
   makers: [
-    // NSIS Installer - Mai bine recunoscut de antivirusuri
-    {
-      name: '@electron-forge/maker-nsis',
-      config: {
-        name: 'ZedZenConverter',
-        displayName: 'ZED-ZEN Media Converter',
-        // Icon pentru installer
-        installerIcon: './src/assets/icon.ico',
-        uninstallerIcon: './src/assets/icon.ico',
-        // Opțiuni instalare
-        oneClick: false,
-        allowToChangeInstallationDirectory: true,
-        // License
-        license: './LICENSE',
-        // Code signing (dacă e configurat)
-        ...(isCodeSigningEnabled && {
-          signWithParams: `/f "${process.env.WINDOWS_CERTIFICATE_FILE}" /p "${process.env.WINDOWS_CERTIFICATE_PASSWORD}" /tr http://timestamp.digicert.com /td sha256 /fd sha256`,
-        }),
-      },
-    },
-    // Squirrel - Backup/alternativă
+    // Squirrel Windows Installer - cu suport code signing
     {
       name: '@electron-forge/maker-squirrel',
       config: {
@@ -141,7 +121,7 @@ module.exports = {
         description: 'Free media converter for images, videos, and documents',
         setupExe: 'ZedZen-Media-Converter-Setup.exe',
         setupIcon: './src/assets/icon.ico',
-        // Code signing pentru Squirrel
+        // Code signing pentru Squirrel (dacă e configurat)
         ...(isCodeSigningEnabled && {
           certificateFile: process.env.WINDOWS_CERTIFICATE_FILE,
           certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
@@ -149,7 +129,7 @@ module.exports = {
         }),
       },
     },
-    // ZIP pentru distribuție manuală
+    // ZIP pentru distribuție manuală (portabil, fără instalare)
     {
       name: '@electron-forge/maker-zip',
       platforms: ['win32'],

@@ -39,7 +39,6 @@
     "@babel/core": "^7.28.5",
     "@babel/preset-react": "^7.28.5",
     "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-nsis": "^7.5.0",
     "@electron-forge/maker-squirrel": "^7.5.0",
     "@electron-forge/maker-zip": "^7.5.0",
     "@electron-forge/plugin-fuses": "^7.5.0",
