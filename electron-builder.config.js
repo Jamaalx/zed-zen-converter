@@ -23,6 +23,43 @@ module.exports = {
     artifactName: '${productName}-Setup-${version}.${ext}',
   },
 
+  mac: {
+    target: [
+      {
+        target: 'dmg',
+        arch: ['x64', 'arm64'],
+      },
+    ],
+    icon: 'assets/icon.png',
+    artifactName: '${productName}-${version}-${arch}.${ext}',
+    category: 'public.app-category.utilities',
+  },
+
+  dmg: {
+    contents: [
+      {
+        x: 130,
+        y: 220,
+      },
+      {
+        x: 410,
+        y: 220,
+        type: 'link',
+        path: '/Applications',
+      },
+    ],
+    window: {
+      width: 540,
+      height: 380,
+    },
+  },
+
+  linux: {
+    target: ['AppImage', 'deb'],
+    icon: 'assets/icon.png',
+    category: 'Utility',
+  },
+
   nsis: {
     oneClick: false,
     perMachine: false,
