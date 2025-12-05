@@ -77,7 +77,7 @@ npm run make
 
 Folosește SignTool direct după build:
 ```cmd
-signtool sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /a "out\make\nsis\x64\ZedZenConverter Setup.exe"
+signtool sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /a "out\make\squirrel.windows\x64\ZedZen-Media-Converter-Setup.exe"
 ```
 
 ---
@@ -89,12 +89,9 @@ După `npm run make`, vei găsi:
 ```
 out/
 ├── make/
-│   ├── nsis/
-│   │   └── x64/
-│   │       └── ZedZenConverter Setup.exe  ← NSIS Installer (recomandat)
 │   ├── squirrel.windows/
 │   │   └── x64/
-│   │       └── ZedZen-Media-Converter-Setup.exe  ← Squirrel Installer
+│   │       └── ZedZen-Media-Converter-Setup.exe  ← Installer Windows
 │   └── zip/
 │       └── win32/
 │           └── x64/
@@ -108,7 +105,7 @@ out/
 După semnare, verifică că totul e OK:
 
 ```cmd
-signtool verify /pa /v "out\make\nsis\x64\ZedZenConverter Setup.exe"
+signtool verify /pa /v "out\make\squirrel.windows\x64\ZedZen-Media-Converter-Setup.exe"
 ```
 
 ---
