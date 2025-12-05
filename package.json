@@ -8,6 +8,10 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
+    "generate-assets": "node scripts/generate-installer-assets.js",
+    "make:nsis": "npm run generate-assets && electron-forge package && electron-builder --config electron-builder.config.js --win nsis --prepackaged \"out/ZED-ZEN Media Converter-win32-x64\"",
+    "build:installer": "electron-builder --config electron-builder.config.js --win nsis --prepackaged \"out/ZED-ZEN Media Converter-win32-x64\"",
+    "dist": "npm run generate-assets && electron-builder --config electron-builder.config.js",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .js,.jsx ."
   },
@@ -41,6 +45,7 @@
     "@electron-forge/cli": "^7.5.0",
     "@electron-forge/maker-squirrel": "^7.5.0",
     "@electron-forge/maker-zip": "^7.5.0",
+    "electron-builder": "^25.1.8",
     "@electron-forge/plugin-fuses": "^7.5.0",
     "@electron-forge/plugin-webpack": "^7.10.2",
     "@electron/rebuild": "^3.7.2",

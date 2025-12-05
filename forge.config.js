@@ -29,26 +29,16 @@ const isCodeSigningEnabled = process.env.WINDOWS_CERTIFICATE_FILE && process.env
 
 module.exports = {
   packagerConfig: {
-    asar: true, // ASAR activat pentru securitate mai bună
+    asar: {
+      unpack: '**/node_modules/{sharp,@img}/**/*'
+    },
     name: 'ZED-ZEN Media Converter',
     executableName: 'ZedZen-Converter',
-    icon: './src/assets/icon',
-    // Code signing pentru Windows
-    ...(isCodeSigningEnabled && {
-      windowsSign: {
-        certificateFile: process.env.WINDOWS_CERTIFICATE_FILE,
-        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
-      }
-    }),
-    // Informații despre companie (ajută la reputație)
-    appCopyright: 'Copyright © 2024 Fortitudo Vincit SRL',
-    appVersion: '1.0.0',
-    win32metadata: {
-      CompanyName: 'Fortitudo Vincit SRL',
-      FileDescription: 'ZED-ZEN Media Converter - Professional media conversion tool',
-      ProductName: 'ZED-ZEN Media Converter',
-      OriginalFilename: 'ZedZen-Converter.exe',
-    },
+    icon: './assets/icon',
+    extraResource: [
+      './node_modules/sharp',
+      './node_modules/@img'
+    ],
   },
   rebuildConfig: {
     onlyModules: ['sharp']
