@@ -1,7 +1,22 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const sharp = require('sharp');
+
+// Load sharp with proper path for packaged app
+let sharp;
+try {
+  // Try loading from unpacked resources first (packaged app)
+  const resourcesPath = process.resourcesPath;
+  const sharpPath = path.join(resourcesPath, 'sharp');
+  if (fs.existsSync(sharpPath)) {
+    sharp = require(sharpPath);
+  } else {
+    sharp = require('sharp');
+  }
+} catch (error) {
+  console.log('Loading sharp from default location');
+  sharp = require('sharp');
+}
 const ffmpeg = require('fluent-ffmpeg');
 const { PDFDocument, rgb } = require('pdf-lib');
 const mammoth = require('mammoth');

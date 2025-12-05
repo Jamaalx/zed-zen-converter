@@ -3,9 +3,16 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
-    asar: false,
+    asar: {
+      unpack: '**/node_modules/{sharp,@img}/**/*'
+    },
     name: 'ZED-ZEN Media Converter',
     executableName: 'ZedZen-Converter',
+    icon: './assets/icon',
+    extraResource: [
+      './node_modules/sharp',
+      './node_modules/@img'
+    ],
   },
   rebuildConfig: {
     force: false, // Nu forța rebuild
