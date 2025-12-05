@@ -69,5 +69,5 @@ MIT © ZED-ZEN / Fortitudo Vincit SRL
 ---
 
 **Version**: 1.0.0  
-**Author**: Alex Damian  
+**Author**: Alex Mantello
 **Company**: Fortitudo Vincit SRL
