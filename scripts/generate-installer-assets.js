@@ -1,5 +1,5 @@
 /**
- * Generate installer assets (sidebar images) for NSIS installer
+ * Generate installer assets for NSIS installer
  * Run this before building the installer: node scripts/generate-installer-assets.js
  */
 
@@ -21,12 +21,12 @@ async function generateInstallerSidebar() {
   }
 
   try {
-    // Create a purple background with the logo
+    // Create a purple background with the logo (PNG format - will be converted)
     const logoBuffer = await sharp(logoPath)
       .resize(120, 120, { fit: 'contain', background: { r: 127, g: 90, b: 240, alpha: 1 } })
       .toBuffer();
 
-    // Create sidebar with purple background and centered logo
+    // Create sidebar with purple background and centered logo as PNG
     await sharp({
       create: {
         width: SIDEBAR_WIDTH,
@@ -42,62 +42,24 @@ async function generateInstallerSidebar() {
           left: Math.floor((SIDEBAR_WIDTH - 120) / 2)
         }
       ])
-      .toFormat('bmp')
-      .toFile(path.join(outputDir, 'installerSidebar.bmp'));
+      .png()
+      .toFile(path.join(outputDir, 'installerSidebar.png'));
 
-    console.log('Generated installerSidebar.bmp');
+    console.log('Generated installerSidebar.png');
 
-    // Create uninstaller sidebar (same as installer)
-    await sharp({
-      create: {
-        width: SIDEBAR_WIDTH,
-        height: SIDEBAR_HEIGHT,
-        channels: 3,
-        background: PURPLE_COLOR
-      }
-    })
-      .composite([
-        {
-          input: logoBuffer,
-          top: 40,
-          left: Math.floor((SIDEBAR_WIDTH - 120) / 2)
-        }
-      ])
-      .toFormat('bmp')
-      .toFile(path.join(outputDir, 'uninstallerSidebar.bmp'));
+    // Copy as uninstaller sidebar too
+    fs.copyFileSync(
+      path.join(outputDir, 'installerSidebar.png'),
+      path.join(outputDir, 'uninstallerSidebar.png')
+    );
 
-    console.log('Generated uninstallerSidebar.bmp');
-
+    console.log('Generated uninstallerSidebar.png');
     console.log('\nInstaller assets generated successfully!');
+    console.log('Note: NSIS will use default sidebar styling (PNG sidebars not directly supported)');
+
   } catch (error) {
-    console.error('Error generating installer assets:', error);
-
-    // Fallback: create simple purple sidebars without logo
-    console.log('Creating fallback sidebars...');
-
-    await sharp({
-      create: {
-        width: SIDEBAR_WIDTH,
-        height: SIDEBAR_HEIGHT,
-        channels: 3,
-        background: PURPLE_COLOR
-      }
-    })
-      .toFormat('bmp')
-      .toFile(path.join(outputDir, 'installerSidebar.bmp'));
-
-    await sharp({
-      create: {
-        width: SIDEBAR_WIDTH,
-        height: SIDEBAR_HEIGHT,
-        channels: 3,
-        background: PURPLE_COLOR
-      }
-    })
-      .toFormat('bmp')
-      .toFile(path.join(outputDir, 'uninstallerSidebar.bmp'));
-
-    console.log('Fallback sidebars created.');
+    console.error('Error generating installer assets:', error.message);
+    console.log('Continuing without custom sidebar images...');
   }
 }
 

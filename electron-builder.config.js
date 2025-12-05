@@ -34,12 +34,10 @@ module.exports = {
     createDesktopShortcut: true,
     createStartMenuShortcut: true,
     shortcutName: 'ZED-ZEN Media Converter',
-
-    // Wizard style installer
-    installerSidebar: 'build-resources/installerSidebar.bmp',
-
-    // Custom messages
     uninstallDisplayName: 'ZED-ZEN Media Converter',
+
+    // License agreement
+    license: 'LICENSE',
   },
 
   // Files to include
@@ -54,14 +52,14 @@ module.exports = {
     '!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}',
   ],
 
-  // Include native modules
+  // Include native modules unpacked
   asarUnpack: [
     '**/node_modules/sharp/**/*',
     '**/node_modules/@img/**/*',
   ],
 
   // Compression
-  compression: 'maximum',
+  compression: 'normal',
 
   // Don't publish automatically
   publish: null,
