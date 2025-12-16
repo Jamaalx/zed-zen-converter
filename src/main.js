@@ -126,6 +126,14 @@ app.on('activate', () => {
 
 // IPC Handlers
 
+ipcMain.handle('open-external', async (event, url) => {
+  if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
+    await shell.openExternal(url);
+    return { success: true };
+  }
+  return { success: false, error: 'Invalid URL' };
+});
+
 ipcMain.handle('open-folder', async (event, folderPath) => {
   if (folderPath && fs.existsSync(folderPath)) {
     shell.openPath(folderPath);
