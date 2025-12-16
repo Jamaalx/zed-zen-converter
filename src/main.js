@@ -81,8 +81,11 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 let mainWindow;
 
 const createWindow = () => {
-  // Get icon path based on platform
-  const iconPath = path.join(__dirname, '..', 'assets', 'icon128.png');
+  // Get icon path - works in both development and production
+  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  const iconPath = isDev
+    ? path.join(process.cwd(), 'assets', 'icon128.png')
+    : path.join(process.resourcesPath, 'assets', 'icon128.png');
 
   mainWindow = new BrowserWindow({
     width: 1200,

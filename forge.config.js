@@ -37,7 +37,8 @@ module.exports = {
     icon: './assets/icon',
     extraResource: [
       './node_modules/sharp',
-      './node_modules/@img'
+      './node_modules/@img',
+      './assets'
     ],
   },
   rebuildConfig: {

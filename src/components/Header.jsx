@@ -1,4 +1,5 @@
 import React from 'react';
+import logoIcon from '../assets/icon48.png';
 
 function Header({ onAboutClick }) {
   const openLink = (url) => {
@@ -15,14 +16,11 @@ function Header({ onAboutClick }) {
             className="hover:scale-105 transition-transform cursor-pointer"
             title="Visit ZedZen.com"
           >
-            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-md">
-              <svg viewBox="0 0 100 100" className="w-8 h-8">
-                <path 
-                  d="M15 25 L85 25 L85 37 L38 37 L85 63 L85 75 L15 75 L15 63 L62 63 L15 37 Z" 
-                  fill="#8B5CFF"
-                />
-              </svg>
-            </div>
+            <img
+              src={logoIcon}
+              alt="ZED-ZEN Logo"
+              className="w-12 h-12 rounded-lg shadow-md"
+            />
           </button>
           
           <div>
