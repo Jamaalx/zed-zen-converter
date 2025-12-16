@@ -447,6 +447,64 @@ async function convertTxtToPdf(inputPath, outputPath) {
   }
 }
 
+// ============= PDF SPLIT =============
+async function splitPdf(inputPath, outputFolder, pagesPerSplit) {
+  try {
+    const pdfBytes = fs.readFileSync(inputPath);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    const totalPages = pdfDoc.getPageCount();
+
+    const baseName = path.basename(inputPath, '.pdf');
+    const results = [];
+
+    let partNumber = 1;
+    for (let startPage = 0; startPage < totalPages; startPage += pagesPerSplit) {
+      const endPage = Math.min(startPage + pagesPerSplit, totalPages);
+
+      // Create a new PDF for this part
+      const newPdf = await PDFDocument.create();
+      const pages = await newPdf.copyPages(pdfDoc,
+        Array.from({ length: endPage - startPage }, (_, i) => startPage + i)
+      );
+
+      pages.forEach(page => newPdf.addPage(page));
+
+      const outputPath = path.join(outputFolder, `${baseName}_part${partNumber}.pdf`);
+      const newPdfBytes = await newPdf.save();
+      fs.writeFileSync(outputPath, newPdfBytes);
+
+      results.push({
+        part: partNumber,
+        pages: `${startPage + 1}-${endPage}`,
+        path: outputPath
+      });
+
+      partNumber++;
+    }
+
+    return {
+      success: true,
+      totalPages,
+      partsCreated: results.length,
+      parts: results
+    };
+  } catch (error) {
+    console.error('PDF split error:', error);
+    throw new Error(`PDF split failed: ${error.message}`);
+  }
+}
+
+// Get PDF page count
+async function getPdfPageCount(inputPath) {
+  try {
+    const pdfBytes = fs.readFileSync(inputPath);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    return { success: true, pageCount: pdfDoc.getPageCount() };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
 // ============= MAIN CONVERSION HANDLER =============
 ipcMain.handle('convert-file', async (event, options) => {
   const { inputPath, outputFolder, format, quality, resize } = options;
@@ -486,4 +544,30 @@ ipcMain.handle('convert-file', async (event, options) => {
     console.error('Conversion error:', error);
     return { success: false, error: error.message || 'Conversion failed' };
   }
+});
+
+// ============= PDF SPLIT HANDLERS =============
+ipcMain.handle('split-pdf', async (event, options) => {
+  const { inputPath, outputFolder, pagesPerSplit } = options;
+  try {
+    const result = await splitPdf(inputPath, outputFolder, pagesPerSplit);
+    return result;
+  } catch (error) {
+    console.error('PDF split error:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-pdf-page-count', async (event, filePath) => {
+  return await getPdfPageCount(filePath);
+});
+
+ipcMain.handle('select-pdf-file', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'PDF Files', extensions: ['pdf'] }
+    ]
+  });
+  return result.filePaths[0];
 });

@@ -9,6 +9,7 @@ import TermsModal from './components/TermsModal';
 import PrivacyModal from './components/PrivacyModal';
 import PopupManager from './components/PopupManager';
 import PremiumFeatureCard from './components/PremiumFeatureCard';
+import PdfSplitPanel from './components/PdfSplitPanel';
 import analytics from './utils/analytics';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
   const [compressionMode, setCompressionMode] = useState(false);
+  const [showPdfSplit, setShowPdfSplit] = useState(false);
 
   // Resize state
   const [resizeEnabled, setResizeEnabled] = useState(false);
@@ -150,16 +152,27 @@ function App() {
         <div className="w-2/3 flex flex-col p-6 border-r border-gray-800">
           <FileDropzone onFilesAdded={handleFilesAdded} />
           
+          {/* PDF Split Tool Button */}
+          <button
+            onClick={() => setShowPdfSplit(true)}
+            className="mt-4 p-3 bg-gradient-to-r from-zedzen-purple to-purple-600 rounded-lg text-white font-bold hover:scale-105 transition-transform flex items-center justify-between"
+          >
+            <span>PDF Split Tool</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </button>
+
           {/* Premium Features Teaser */}
           <button
             onClick={() => setShowPremiumFeatures(!showPremiumFeatures)}
             className="mt-4 p-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg text-gray-900 font-bold hover:scale-105 transition-transform flex items-center justify-between"
           >
-            <span>✨ Unlock Premium Features</span>
-            <svg 
-              className={`w-5 h-5 transition-transform ${showPremiumFeatures ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
+            <span>Unlock Premium Features</span>
+            <svg
+              className={`w-5 h-5 transition-transform ${showPremiumFeatures ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -250,6 +263,11 @@ function App() {
 
       {/* Strategic Popups */}
       <PopupManager conversionsThisSession={analytics.conversionsThisSession} />
+
+      {/* PDF Split Panel */}
+      {showPdfSplit && (
+        <PdfSplitPanel onClose={() => setShowPdfSplit(false)} />
+      )}
     </div>
   );
 }
