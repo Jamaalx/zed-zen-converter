@@ -81,12 +81,16 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 let mainWindow;
 
 const createWindow = () => {
+  // Get icon path based on platform
+  const iconPath = path.join(__dirname, '..', 'assets', 'icon128.png');
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 900,
     minHeight: 600,
     backgroundColor: '#141414',
+    icon: iconPath,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
