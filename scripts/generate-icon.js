@@ -8,19 +8,23 @@ const path = require('path');
 const fs = require('fs');
 const toIco = require('to-ico');
 
-const ICON_SIZES = [16, 24, 32, 48, 64, 128, 256];
+const ICON_SIZES = [16, 24, 32, 48, 64, 72, 96, 128, 256, 512];
 
 async function generateIcon() {
   const logoPath = path.join(__dirname, '..', 'src', 'assets', 'logo.png');
   const outputDir = path.join(__dirname, '..', 'assets');
   const srcAssetsDir = path.join(__dirname, '..', 'src', 'assets');
+  const iconsDir = path.join(outputDir, 'icons');
 
-  // Ensure output directory exists
+  // Ensure output directories exist
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
+  if (!fs.existsSync(iconsDir)) {
+    fs.mkdirSync(iconsDir, { recursive: true });
+  }
 
-  console.log('Generating icon from logo.png...');
+  console.log('Generating icons from logo.png...');
 
   try {
     // Generate PNG files for each size
@@ -34,13 +38,19 @@ async function generateIcon() {
           .png()
           .toBuffer();
 
-        console.log(`  Generated ${size}x${size} PNG`);
+        // Save individual PNG files
+        const pngPath = path.join(iconsDir, `icon-${size}.png`);
+        fs.writeFileSync(pngPath, buffer);
+        console.log(`  Generated ${size}x${size} PNG -> assets/icons/icon-${size}.png`);
+
         return buffer;
       })
     );
 
-    // Convert to ICO
-    const icoBuffer = await toIco(pngBuffers);
+    // Convert to ICO (only sizes up to 256 for ICO format)
+    const icoSizes = ICON_SIZES.filter(s => s <= 256);
+    const icoBuffers = pngBuffers.slice(0, icoSizes.length);
+    const icoBuffer = await toIco(icoBuffers);
 
     // Save to assets folder
     fs.writeFileSync(path.join(outputDir, 'icon.ico'), icoBuffer);
@@ -60,7 +70,8 @@ async function generateIcon() {
       .toFile(path.join(outputDir, 'icon.png'));
     console.log('Saved assets/icon.png');
 
-    console.log('\nIcon generation complete!');
+    console.log('\n✅ Icon generation complete!');
+    console.log(`Generated ${ICON_SIZES.length} PNG icons in assets/icons/`);
 
   } catch (error) {
     console.error('Error generating icon:', error);
