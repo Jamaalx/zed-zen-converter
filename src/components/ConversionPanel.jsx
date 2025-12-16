@@ -229,14 +229,40 @@ function ConversionPanel({
                 <span className="ml-2 text-xs text-gray-300">Maintain aspect ratio</span>
               </label>
 
-              {/* Quick Size Presets */}
+              {/* Icon Size Presets */}
               <div>
-                <label className="block text-xs text-gray-400 mb-2">Quick Sizes</label>
+                <label className="block text-xs text-gray-400 mb-2">Icon Sizes</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { size: 16, label: '16×16' },
+                    { size: 32, label: '32×32' },
+                    { size: 48, label: '48×48' },
+                    { size: 64, label: '64×64' },
+                    { size: 72, label: '72×72' },
+                    { size: 96, label: '96×96' },
+                    { size: 128, label: '128×128' },
+                    { size: 256, label: '256×256' }
+                  ].map(preset => (
+                    <button
+                      key={preset.size}
+                      onClick={() => {
+                        setResizeWidth(preset.size);
+                        setResizeHeight(preset.size);
+                        setMaintainAspectRatio(false);
+                      }}
+                      className="px-2 py-1.5 bg-gray-900 hover:bg-gray-700 border border-gray-600 hover:border-zedzen-purple rounded text-xs text-gray-300 hover:text-white transition-colors"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Large Size Presets */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-2">Large Sizes</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { size: 64, label: '64×64' },
-                    { size: 128, label: '128×128' },
-                    { size: 256, label: '256×256' },
                     { size: 512, label: '512×512' },
                     { size: 1024, label: '1024×1024' },
                     { size: 2048, label: '2048×2048' }
