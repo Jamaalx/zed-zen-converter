@@ -40,23 +40,23 @@
     "pdf2pic": "^3.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sharp": "^0.33.5"
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-react": "^7.28.5",
-    "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-squirrel": "^7.5.0",
-    "@electron-forge/maker-zip": "^7.5.0",
-    "@electron-forge/plugin-fuses": "^7.5.0",
-    "@electron-forge/plugin-webpack": "^7.10.2",
-    "@electron/rebuild": "^3.7.2",
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron-forge/plugin-webpack": "^7.11.2",
+    "@electron/rebuild": "^4.2.0",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
-    "electron": "32.2.5",
-    "electron-builder": "^25.1.8",
-    "electron-winstaller": "^5.4.0",
+    "electron": "44.0.0",
+    "electron-builder": "^26.15.3",
+    "electron-winstaller": "^5.4.4",
     "png-to-ico": "^3.0.2",
     "postcss": "^8.4.49",
     "postcss-loader": "^8.1.1",
@@ -70,6 +70,7 @@
     "webpack-dev-server": "$webpack-dev-server",
     "sockjs": {
       "uuid": "^11.1.1"
-    }
+    },
+    "extract-zip": "npm:@electron-internal/extract-zip@^1.0.1"
   }
 }
