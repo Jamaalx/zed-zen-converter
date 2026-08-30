@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Upload packaged app
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: zedzen-converter-linux-x64-${{ github.sha }}
           path: out/ZED-ZEN Media Converter-linux-x64
