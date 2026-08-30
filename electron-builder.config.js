@@ -6,7 +6,7 @@
 module.exports = {
   appId: 'com.zedzen.mediaconverter',
   productName: 'ZED-ZEN Media Converter',
-  copyright: 'Copyright 2024 Fortitudo Vincit SRL',
+  copyright: 'Copyright 2024-2026 Fortitudo Vincit SRL',
 
   directories: {
     output: 'dist',
@@ -58,6 +58,8 @@ module.exports = {
     target: ['AppImage', 'deb'],
     icon: 'assets/icon.png',
     category: 'Utility',
+    // required by the .deb target (package.json "author" has no e-mail)
+    maintainer: 'Alex Mantello <alex.mantello13@gmail.com>',
   },
 
   nsis: {

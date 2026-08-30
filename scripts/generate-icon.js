@@ -50,9 +50,9 @@ async function generateIcon() {
     fs.writeFileSync(path.join(srcAssetsDir, 'icon.ico'), icoBuffer);
     console.log('Saved src/assets/icon.ico');
 
-    // Generate icon.png (256x256) for other uses
+    // Generate icon.png (512x512) - Linux/macOS icon for electron-builder (needs >= 512px)
     await sharp(logoPath)
-      .resize(256, 256, {
+      .resize(512, 512, {
         fit: 'contain',
         background: { r: 127, g: 90, b: 240, alpha: 1 }
       })
