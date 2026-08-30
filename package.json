@@ -40,8 +40,7 @@
     "pdf2pic": "^3.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sharp": "^0.33.5",
-    "to-ico": "^1.1.5"
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
@@ -52,18 +51,25 @@
     "@electron-forge/plugin-fuses": "^7.5.0",
     "@electron-forge/plugin-webpack": "^7.10.2",
     "@electron/rebuild": "^3.7.2",
-    "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
     "electron": "32.2.5",
     "electron-builder": "^25.1.8",
     "electron-winstaller": "^5.4.0",
+    "png-to-ico": "^3.0.2",
     "postcss": "^8.4.49",
     "postcss-loader": "^8.1.1",
     "style-loader": "^4.0.0",
     "tailwindcss": "^3.4.17",
-    "vite": "^5.4.11",
-    "webpack-dev-server": "^5.2.2"
+    "webpack-dev-server": "^6.0.0"
+  },
+  "overrides": {
+    "tar": "^7.5.22",
+    "tmp": "^0.2.7",
+    "webpack-dev-server": "$webpack-dev-server",
+    "sockjs": {
+      "uuid": "^11.1.1"
+    }
   }
 }

@@ -6,7 +6,7 @@
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
-const toIco = require('to-ico');
+const pngToIco = require('png-to-ico').default;
 
 const ICON_SIZES = [16, 24, 32, 48, 64, 128, 256];
 
@@ -40,7 +40,7 @@ async function generateIcon() {
     );
 
     // Convert to ICO
-    const icoBuffer = await toIco(pngBuffers);
+    const icoBuffer = await pngToIco(pngBuffers);
 
     // Save to assets folder
     fs.writeFileSync(path.join(outputDir, 'icon.ico'), icoBuffer);
