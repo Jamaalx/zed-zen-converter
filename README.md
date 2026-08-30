@@ -1,8 +1,32 @@
 # ZED-ZEN Media Converter
 
+[![CI](https://github.com/Jamaalx/zed-zen-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/Jamaalx/zed-zen-converter/actions/workflows/ci.yml)
+[![Release](https://github.com/Jamaalx/zed-zen-converter/actions/workflows/release.yml/badge.svg)](https://github.com/Jamaalx/zed-zen-converter/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 Professional media conversion tool powered by FFmpeg and Sharp.
 
 **100% Offline | No Data Collection | Open Source**
+
+---
+
+## Download
+
+Pre-built packages are published on the **[Releases page](https://github.com/Jamaalx/zed-zen-converter/releases)**:
+
+| Platform | File |
+|----------|------|
+| Windows (x64) | `ZedZen-Media-Converter-Setup.exe` (installer) or `ZED-ZEN Media Converter-win32-x64.zip` (portable) |
+| macOS (Apple Silicon) | `ZED-ZEN Media Converter-<version>-arm64.dmg` |
+| Linux (x64) | `.AppImage` or `.deb` |
+
+> **The builds are not code-signed.** Windows SmartScreen will show "Windows protected your PC"
+> (click *More info -> Run anyway*) and macOS Gatekeeper will refuse to open the app the first time
+> (right-click the app -> *Open*, or run `xattr -d com.apple.quarantine "/Applications/ZED-ZEN Media Converter.app"`).
+> This is expected for an unsigned open-source app - see [Why Antivirus May Flag This App](#why-antivirus-may-flag-this-app).
+> If you prefer, [build from source](#build-from-source) yourself.
+
+Every release is built automatically from a git tag by [GitHub Actions](https://github.com/Jamaalx/zed-zen-converter/actions/workflows/release.yml), so the binaries match the source in this repository.
 
 ---
 
@@ -50,10 +74,10 @@ Some antivirus software may flag this application because:
 
 | Component | Library | Purpose |
 |-----------|---------|---------|
-| Desktop | [Electron](https://www.electronjs.org/) 32.2.5 | Cross-platform framework |
+| Desktop | [Electron](https://www.electronjs.org/) 44 | Cross-platform framework |
 | UI | [React](https://react.dev/) 18.3.1 | User interface |
 | Styling | [Tailwind CSS](https://tailwindcss.com/) 3.4.17 | Modern CSS |
-| Images | [Sharp](https://sharp.pixelplumbing.com/) 0.33.5 | Image processing |
+| Images | [Sharp](https://sharp.pixelplumbing.com/) 0.35 | Image processing |
 | Video | [FFmpeg](https://ffmpeg.org/) | Video processing |
 | PDF | [pdf-lib](https://pdf-lib.js.org/) 1.17.1 | PDF manipulation |
 | Documents | [mammoth](https://github.com/mwilliamson/mammoth.js), [docx](https://docx.js.org/) | Document conversion |
@@ -62,12 +86,12 @@ All dependencies are open source, actively maintained, and used by millions of d
 
 ---
 
-## Installation
+## Build from Source
 
 ### Prerequisites
 
-- Node.js v18 or higher
-- FFmpeg installed on your system
+- Node.js 20 or newer (CI uses Node 22)
+- FFmpeg is bundled via `@ffmpeg-installer/ffmpeg`, no system install needed
 
 ### From Source
 
@@ -86,7 +110,9 @@ npm start
 npm run make
 ```
 
-The installer will be in `out/make/squirrel.windows/x64/`.
+The installer will be in `out/make/squirrel.windows/x64/` (Windows). On macOS use `npm run make:mac` (dmg in `dist/`), on Linux `npm run make:linux` (AppImage + deb in `dist/`).
+
+For the full build matrix, code signing and how releases are cut, see [BUILD.md](./BUILD.md).
 
 ---
 
@@ -112,13 +138,17 @@ The installer will be in `out/make/squirrel.windows/x64/`.
 ## Building Installers
 
 ```bash
-# Windows installer
+# Windows: Squirrel installer + portable zip -> out/make/
 npm run make
 
-# Output location
-out/make/squirrel.windows/x64/ZedZen-Media-Converter-Setup.exe
+# macOS: dmg -> dist/
+npm run make:mac
+
+# Linux: AppImage + deb -> dist/
+npm run make:linux
 ```
 
+The same commands run in [`.github/workflows/release.yml`](./.github/workflows/release.yml) on every `v*` tag.
 For code signing instructions, see [BUILD.md](./BUILD.md).
 
 ---
@@ -134,9 +164,12 @@ zed-zen-converter/
 │   ├── App.jsx           # Main React component
 │   ├── components/       # UI components
 │   └── utils/            # Helper functions
-├── forge.config.js       # Electron Forge config
+├── .github/workflows/    # CI (lint + package) and Release (tag -> draft release)
+├── forge.config.js       # Electron Forge config (package / Windows makers)
+├── electron-builder.config.js # dmg / AppImage / deb / NSIS wrappers
 ├── SECURITY.md           # Security documentation
 ├── BUILD.md              # Build instructions
+├── CHANGELOG.md          # Release notes
 └── LICENSE               # MIT License
 ```
 

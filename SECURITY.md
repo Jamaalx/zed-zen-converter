@@ -12,10 +12,10 @@ This document explains the technology stack, security measures, and why this app
 
 | Component | Library | Version | Purpose | Weekly Downloads |
 |-----------|---------|---------|---------|------------------|
-| **Desktop Framework** | [Electron](https://www.electronjs.org/) | 32.2.5 | Cross-platform desktop app | 3M+ |
+| **Desktop Framework** | [Electron](https://www.electronjs.org/) | 44.0.0 | Cross-platform desktop app | 3M+ |
 | **UI Framework** | [React](https://react.dev/) | 18.3.1 | User interface | 25M+ |
 | **Styling** | [Tailwind CSS](https://tailwindcss.com/) | 3.4.17 | Modern styling | 10M+ |
-| **Image Processing** | [Sharp](https://sharp.pixelplumbing.com/) | 0.33.5 | Image conversion | 6M+ |
+| **Image Processing** | [Sharp](https://sharp.pixelplumbing.com/) | 0.35.4 | Image conversion | 6M+ |
 | **Video Processing** | [FFmpeg](https://ffmpeg.org/) via fluent-ffmpeg | 2.1.3 | Video conversion | 500K+ |
 | **PDF Processing** | [pdf-lib](https://pdf-lib.js.org/) | 1.17.1 | PDF manipulation | 1M+ |
 | **Document Processing** | [mammoth](https://github.com/mwilliamson/mammoth.js) | 1.11.0 | DOCX reading | 300K+ |

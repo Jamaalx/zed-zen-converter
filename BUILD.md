@@ -21,10 +21,13 @@ npm install
 ### 2. Build fără Code Signing (pentru testare)
 
 ```bash
-npm run make
+npm run make          # Windows: installer Squirrel + zip portabil -> out/make/
+npm run make:mac      # macOS:   dmg (arhitectura mașinii) -> dist/
+npm run make:linux    # Linux:   AppImage + deb -> dist/
 ```
 
-Installerul va fi generat în `out/make/`.
+`make:mac` și `make:linux` rulează `electron-forge package` și apoi împachetează
+directorul rezultat cu `electron-builder --prepackaged` (vezi `scripts/dist.js`).
 
 ### 3. Build CU Code Signing (pentru distribuție)
 
@@ -79,6 +82,38 @@ Folosește SignTool direct după build:
 ```cmd
 signtool sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /a "out\make\squirrel.windows\x64\ZedZen-Media-Converter-Setup.exe"
 ```
+
+---
+
+## Build automat & release (GitHub Actions)
+
+- **CI** (`.github/workflows/ci.yml`) – la fiecare push/PR: `npm ci`, `npm run lint`,
+  `npm run package` pe Linux, pornește aplicația 20s sub Xvfb și urcă directorul
+  împachetat ca artifact (7 zile).
+- **Release** (`.github/workflows/release.yml`) – la un tag `v*` (sau manual din
+  *Actions → Release → Run workflow*): build pe Windows / macOS (arm64) / Linux și,
+  DOAR pentru tag-uri, atașează fișierele la un **GitHub Release în draft**.
+
+Cum scoți o versiune:
+
+```bash
+# 1. actualizează "version" în package.json + secțiunea din CHANGELOG.md, apoi:
+git tag v1.0.0
+git push origin main --tags
+# 2. așteaptă workflow-ul Release, apoi publică draftul de pe
+#    https://github.com/Jamaalx/zed-zen-converter/releases
+```
+
+⚠️ **Build-urile din CI NU sunt semnate** (nici Windows, nici macOS – nu există certificat
+sau cont Apple Developer configurat). Sunt funcționale, dar:
+- Windows SmartScreen afișează „Windows protected your PC" → *More info → Run anyway*;
+- macOS Gatekeeper refuză prima deschidere → click-dreapta → *Open*, sau
+  `xattr -d com.apple.quarantine "/Applications/ZED-ZEN Media Converter.app"`.
+
+Când ai un certificat, setează secretele `WINDOWS_CERTIFICATE_FILE` /
+`WINDOWS_CERTIFICATE_PASSWORD` (Windows, vezi mai sus) și `CSC_LINK` / `CSC_KEY_PASSWORD`
++ `APPLE_ID` / `APPLE_APP_SPECIFIC_PASSWORD` / `APPLE_TEAM_ID` (macOS, electron-builder)
+în *Settings → Secrets* și scoate `CSC_IDENTITY_AUTO_DISCOVERY=false` din workflow.
 
 ---
 
@@ -143,5 +178,8 @@ signtool verify /pa /v "out\make\squirrel.windows\x64\ZedZen-Media-Converter-Set
 |---------|-----------|
 | `npm start` | Rulează în mod dezvoltare |
 | `npm run package` | Împachetează fără installer |
-| `npm run make` | Creează installer-ele |
+| `npm run make` | Creează installer-ele Windows (Squirrel + zip) |
+| `npm run make:mac` / `npm run make:linux` | dmg, respectiv AppImage + deb, în `dist/` |
+| `npm run make:nsis` | Installer NSIS (Windows, alternativ la Squirrel) |
+| `npm run lint` | ESLint (rulează și în CI) |
 | `npm run publish` | Publică (necesită configurare GitHub) |
