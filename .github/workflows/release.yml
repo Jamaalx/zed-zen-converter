@@ -1,0 +1,87 @@
+name: Release
+
+# Builds the distributables on all three platforms.
+# - on a `v*` tag push: builds AND attaches them to a DRAFT GitHub Release
+#   (review it on https://github.com/Jamaalx/zed-zen-converter/releases, then publish)
+# - on manual dispatch: builds only, artifacts are downloadable from the run for 7 days
+#
+# Builds are NOT code-signed (no certificate configured). See BUILD.md.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  # never try to auto-discover a signing identity on the macOS runner
+  CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            os: windows-latest
+            # Electron Forge: Squirrel installer + portable zip (see BUILD.md)
+            build: npm run make
+            files: |
+              out/make/squirrel.windows/x64/*.exe
+              out/make/squirrel.windows/x64/*.nupkg
+              out/make/squirrel.windows/x64/RELEASES
+              out/make/zip/win32/x64/*.zip
+          - name: macos-arm64
+            os: macos-latest
+            # electron-forge package + electron-builder dmg (unsigned, not notarized)
+            build: npm run make:mac
+            files: |
+              dist/*.dmg
+          - name: linux-x64
+            os: ubuntu-latest
+            # electron-forge package + electron-builder AppImage/deb
+            build: npm run make:linux
+            files: |
+              dist/*.AppImage
+              dist/*.deb
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build distributables
+        run: ${{ matrix.build }}
+
+      - name: List build output
+        shell: bash
+        run: ls -laR out/make dist 2>/dev/null || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.files }}
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Attach to draft GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          draft: true
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: ${{ matrix.files }}

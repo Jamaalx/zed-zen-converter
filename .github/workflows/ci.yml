@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Lint & package (Linux x64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Generate icons
+        run: npm run generate-icon
+
+      - name: Package with electron-forge
+        run: npm run package
+
+      - name: Smoke-test the packaged app (boots for 20s under Xvfb)
+        run: |
+          set +e
+          timeout -k 5 20 xvfb-run -a "out/ZED-ZEN Media Converter-linux-x64/ZedZen-Converter" --no-sandbox
+          code=$?
+          set -e
+          # 124 = still running when the timeout hit, i.e. it did not crash on startup
+          if [ "$code" -ne 124 ]; then
+            echo "Packaged app exited early with code $code"
+            exit 1
+          fi
+
+      - name: Upload packaged app
+        uses: actions/upload-artifact@v5
+        with:
+          name: zedzen-converter-linux-x64-${{ github.sha }}
+          path: out/ZED-ZEN Media Converter-linux-x64
+          retention-days: 7
+          if-no-files-found: error
