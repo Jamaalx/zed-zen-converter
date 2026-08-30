@@ -16,7 +16,7 @@
     "make:linux": "npm run generate-icon && npm run generate-assets && node scripts/dist.js",
     "dist": "npm run generate-icon && npm run generate-assets && node scripts/dist.js",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .js,.jsx ."
+    "lint": "eslint ."
   },
   "keywords": [
     "media",
@@ -50,12 +50,16 @@
     "@electron-forge/plugin-fuses": "^7.11.2",
     "@electron-forge/plugin-webpack": "^7.11.2",
     "@electron/rebuild": "^4.2.0",
+    "@eslint/js": "^9.39.5",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
     "electron": "44.0.0",
     "electron-builder": "^26.15.3",
     "electron-winstaller": "^5.4.4",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^17.11.0",
     "png-to-ico": "^3.0.2",
     "postcss": "^8.4.49",
     "postcss-loader": "^8.1.1",
