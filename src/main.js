@@ -450,6 +450,15 @@ async function convertTxtToPdf(inputPath, outputPath) {
 // ============= PDF SPLIT =============
 async function splitPdf(inputPath, outputFolder, pagesPerSplit) {
   try {
+    pagesPerSplit = Number(pagesPerSplit);
+    if (!Number.isInteger(pagesPerSplit) || pagesPerSplit < 1) {
+      // 0 / NaN would make the loop below never advance
+      throw new Error('Pages per part must be a whole number of at least 1');
+    }
+    if (!fs.existsSync(outputFolder)) {
+      fs.mkdirSync(outputFolder, { recursive: true });
+    }
+
     const pdfBytes = fs.readFileSync(inputPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const totalPages = pdfDoc.getPageCount();
@@ -511,7 +520,13 @@ ipcMain.handle('convert-file', async (event, options) => {
 
   try {
     const baseName = path.basename(inputPath, path.extname(inputPath));
-    const outputPath = path.join(outputFolder, `${baseName}.${format}`);
+    let outputPath = path.join(outputFolder, `${baseName}.${format}`);
+    // Same folder + same format (e.g. JPG -> JPG to compress/resize): never
+    // write over the source file. sharp refuses it and ffmpeg would truncate
+    // the input it is still reading.
+    if (path.resolve(outputPath).toLowerCase() === path.resolve(inputPath).toLowerCase()) {
+      outputPath = path.join(outputFolder, `${baseName}_converted.${format}`);
+    }
     const ext = path.extname(inputPath).toLowerCase();
 
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.svg'];
