@@ -19,7 +19,7 @@ try {
 }
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
-const { PDFDocument, rgb } = require('pdf-lib');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const { Document, Packer, Paragraph, TextRun } = require('docx');
@@ -383,36 +383,70 @@ async function convertPdfToDocx(inputPath, outputPath) {
   }
 }
 
+// Lay plain text out on A4 pages. Wraps long lines instead of cutting them,
+// starts a new page when the current one is full, and replaces characters the
+// standard Helvetica font cannot encode (WinAnsi) instead of throwing.
+async function textToPdf(text, outputPath) {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const encodable = new Set(font.getCharacterSet());
+  const fontSize = 12;
+  const lineHeight = 20;
+  const margin = 50;
+  const pageSize = [595, 842];
+  const maxWidth = pageSize[0] - 2 * margin;
+
+  const clean = (line) => Array.from(line.replace(/\t/g, '    '))
+    .map((ch) => (encodable.has(ch.codePointAt(0)) ? ch : '?'))
+    .join('');
+
+  const wrap = (line) => {
+    const out = [];
+    let current = '';
+    for (const word of line.split(/(\s+)/)) {
+      const candidate = current + word;
+      if (current && font.widthOfTextAtSize(candidate, fontSize) > maxWidth) {
+        out.push(current.trimEnd());
+        current = word.trimStart();
+      } else {
+        current = candidate;
+      }
+      // a single word wider than the page: hard-break it
+      while (font.widthOfTextAtSize(current, fontSize) > maxWidth && current.length > 1) {
+        let cut = current.length - 1;
+        while (cut > 1 && font.widthOfTextAtSize(current.slice(0, cut), fontSize) > maxWidth) cut--;
+        out.push(current.slice(0, cut));
+        current = current.slice(cut);
+      }
+    }
+    out.push(current);
+    return out;
+  };
+
+  let page = pdfDoc.addPage(pageSize);
+  let yPosition = page.getSize().height - margin;
+
+  for (const rawLine of text.split(/\r\n|\r|\n/)) {
+    for (const line of wrap(clean(rawLine))) {
+      if (yPosition < margin) {
+        page = pdfDoc.addPage(pageSize);
+        yPosition = page.getSize().height - margin;
+      }
+      if (line) {
+        page.drawText(line, { x: margin, y: yPosition, size: fontSize, font, color: rgb(0, 0, 0) });
+      }
+      yPosition -= lineHeight;
+    }
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  fs.writeFileSync(outputPath, pdfBytes);
+}
+
 async function convertDocxToPdf(inputPath, outputPath) {
   try {
     const result = await mammoth.extractRawText({ path: inputPath });
-    const text = result.value;
-    
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]);
-    const { height } = page.getSize();
-    
-    const lines = text.split('\n');
-    let yPosition = height - 50;
-    
-    for (const line of lines) {
-      if (yPosition < 50) {
-        const newPage = pdfDoc.addPage([595, 842]);
-        yPosition = newPage.getSize().height - 50;
-      }
-      
-      page.drawText(line.substring(0, 80), {
-        x: 50,
-        y: yPosition,
-        size: 12,
-        color: rgb(0, 0, 0),
-      });
-      
-      yPosition -= 20;
-    }
-    
-    const pdfBytes = await pdfDoc.save();
-    fs.writeFileSync(outputPath, pdfBytes);
+    await textToPdf(result.value, outputPath);
     return { success: true };
   } catch (error) {
     throw new Error(`DOCX to PDF conversion failed: ${error.message}`);
@@ -422,25 +456,7 @@ async function convertDocxToPdf(inputPath, outputPath) {
 async function convertTxtToPdf(inputPath, outputPath) {
   try {
     const text = fs.readFileSync(inputPath, 'utf8');
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]);
-    const { height } = page.getSize();
-    
-    const lines = text.split('\n');
-    let yPosition = height - 50;
-    
-    for (const line of lines) {
-      if (yPosition < 50) {
-        const newPage = pdfDoc.addPage([595, 842]);
-        yPosition = newPage.getSize().height - 50;
-      }
-      
-      page.drawText(line.substring(0, 80), { x: 50, y: yPosition, size: 12, color: rgb(0, 0, 0) });
-      yPosition -= 20;
-    }
-    
-    const pdfBytes = await pdfDoc.save();
-    fs.writeFileSync(outputPath, pdfBytes);
+    await textToPdf(text, outputPath);
     return { success: true };
   } catch (error) {
     throw new Error(`TXT to PDF conversion failed: ${error.message}`);
