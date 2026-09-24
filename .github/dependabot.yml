@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 5
     groups:
       production-dependencies:
@@ -14,8 +14,12 @@ updates:
       # Electron majors are upgraded deliberately (see BUILD.md / CHANGELOG.md)
       - dependency-name: electron
         update-types: ["version-update:semver-major"]
+      # docx >= 9.6 ships a UMD require(x, y) that webpack cannot bundle
+      # (breaks `electron-forge package`); held at ~9.5.3, see CHANGELOG.md
+      - dependency-name: docx
+        versions: [">=9.6.0"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
