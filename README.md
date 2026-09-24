@@ -12,7 +12,8 @@ Professional media conversion tool powered by FFmpeg and Sharp.
 
 ## Download
 
-Pre-built packages are published on the **[Releases page](https://github.com/Jamaalx/zed-zen-converter/releases)**:
+Pre-built packages are published on the **[Releases page](https://github.com/Jamaalx/zed-zen-converter/releases)**
+(no release has been cut yet - until the first one, [build from source](#build-from-source)):
 
 | Platform | File |
 |----------|------|
@@ -106,7 +107,8 @@ npm install
 # Start development mode
 npm start
 
-# Build installer
+# Build installer (Windows; generate-icon creates the git-ignored assets/icon.*)
+npm run generate-icon
 npm run make
 ```
 
@@ -139,7 +141,7 @@ For the full build matrix, code signing and how releases are cut, see [BUILD.md]
 
 ```bash
 # Windows: Squirrel installer + portable zip -> out/make/
-npm run make
+npm run generate-icon && npm run make
 
 # macOS: dmg -> dist/
 npm run make:mac

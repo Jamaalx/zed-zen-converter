@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-09-24)
+- TXT/DOCX -> PDF: text after the first page was drawn over page 1 and the extra pages stayed blank; lines were cut at 80 characters; any character outside WinAnsi (e.g. Romanian `ș`/`ț`) made the conversion fail. Now wraps, paginates and substitutes unencodable characters.
+- Converting into the source folder with the same format no longer targets the input file itself (writes `<name>_converted.<ext>`).
+- PDF split: `pagesPerSplit` of 0/NaN no longer hangs the main process; missing output folder is created.
+- Release workflow: Windows job generates the (git-ignored) icon before `npm run make`; a single `release` job attaches all artifacts so the matrix jobs cannot create duplicate draft releases.
+
+### Changed (2026-09-24)
+- Electron 44.0.0 -> 44.4.5; patch/minor refresh of the lockfile (`npm audit`: 4 -> 0 - postcss-selector-parser, qs).
+- `docx` held at `~9.5.3` (9.6+ cannot be bundled by webpack); Dependabot ignores `docx >= 9.6` and runs monthly.
+
 ### Added
 - GitHub Actions **CI** (`.github/workflows/ci.yml`): lint, `electron-forge package` on Linux, 20 s boot smoke test under Xvfb, packaged app uploaded as a 7-day artifact.
 - GitHub Actions **Release** (`.github/workflows/release.yml`): on every `v*` tag builds Windows (Squirrel installer + zip), macOS arm64 (dmg) and Linux (AppImage + deb) and attaches them to a **draft** GitHub Release; can also be run manually.
