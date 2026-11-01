@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   # never try to auto-discover a signing identity on the macOS runner
@@ -31,7 +31,7 @@ jobs:
           - name: windows-x64
             os: windows-latest
             # Electron Forge: Squirrel installer + portable zip (see BUILD.md)
-            build: npm run make
+            build: npm run generate-icon && npm run make
             files: |
               out/make/squirrel.windows/x64/*.exe
               out/make/squirrel.windows/x64/*.nupkg
@@ -77,11 +77,26 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - name: Attach to draft GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+  release:
+    # One job attaches everything, so the three matrix jobs cannot race each
+    # other into creating duplicate draft releases.
+    name: Attach to draft GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: ls -laR artifacts
+
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           draft: true
           generate_release_notes: true
           fail_on_unmatched_files: true
-          files: ${{ matrix.files }}
+          files: artifacts/**/*
