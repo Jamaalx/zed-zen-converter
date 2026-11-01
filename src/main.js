@@ -17,8 +17,7 @@ try {
   console.log('Loading sharp from default location');
   sharp = require('sharp');
 }
-const ffmpeg = require('fluent-ffmpeg');
-const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+const { spawn } = require('child_process');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const { PDFParse } = require('pdf-parse');
 const mammoth = require('mammoth');
@@ -75,14 +74,16 @@ if (process.platform === 'win32') {
   }
 }
 
-// Set FFmpeg path for video conversions using @ffmpeg-installer/ffmpeg.
+// FFmpeg comes from ffmpeg-static (static GPL build downloaded for the host
+// platform at npm install time). ffmpeg-static honours FFMPEG_BIN; the packaged
+// app always runs the binary it ships with.
+if (app.isPackaged) delete process.env.FFMPEG_BIN;
+const ffmpegStaticPath = require('ffmpeg-static');
 // In the packaged app the binary is unpacked next to app.asar (see
 // forge.config.js); a path inside app.asar cannot be spawned.
-const ffmpegPath = ffmpegInstaller.path.replace(
-  `app.asar${path.sep}`,
-  `app.asar.unpacked${path.sep}`
-);
-ffmpeg.setFfmpegPath(ffmpegPath);
+const ffmpegPath = ffmpegStaticPath
+  ? ffmpegStaticPath.replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`)
+  : null;
 
 let mainWindow;
 
@@ -423,90 +424,141 @@ async function convertImage(inputPath, outputPath, format, quality, resize = nul
 }
 
 // ============= VIDEO CONVERSION =============
-function convertVideo(inputPath, outputPath, format, quality) {
-  return new Promise((resolve, reject) => {
-    const outputDir = path.dirname(outputPath);
+// ffmpeg is spawned directly (argument array, no shell). Input files are
+// untrusted, so the demuxers and protocols ffmpeg may use are restricted to
+// the container formats the app accepts: a renamed HLS playlist or concat list
+// cannot make ffmpeg open URLs or other local files.
+const FFMPEG_INPUT_FORMATS = 'mov,mp4,matroska,webm,avi,flv,asf';
 
+// ffmpeg processes that are still running, so they can be cancelled
+const activeFfmpeg = new Set();
+
+function videoCodecArgs(format, quality) {
+  const crf = Math.round(51 - (quality / 100) * 51);
+  const preset = 'veryfast';
+  const threads = '0'; // 0 = auto-detect CPU cores
+
+  switch (format) {
+    case 'mp4':
+    case 'mkv':
+    case 'mov':
+      return ['-c:v', 'libx264', '-crf', String(crf), '-preset', preset, '-threads', threads,
+        '-c:a', 'aac', '-b:a', '128k'];
+    case 'webm':
+      return ['-c:v', 'libvpx-vp9', '-crf', String(crf), '-b:v', '0', '-threads', threads,
+        '-speed', '4', '-c:a', 'libopus', '-b:a', '128k'];
+    case 'avi':
+      return ['-c:v', 'mpeg4', '-q:v', String(Math.round((100 - quality) / 10) + 1), '-threads', threads,
+        '-c:a', 'libmp3lame', '-b:a', '128k'];
+    case 'gif':
+      return ['-vf', 'fps=15,scale=480:-1:flags=lanczos', '-c:v', 'gif'];
+    default:
+      return null;
+  }
+}
+
+function parseTimestamp(h, m, s) {
+  return Number(h) * 3600 + Number(m) * 60 + Number(s);
+}
+
+function convertVideo(inputPath, outputPath, format, quality, onProgress) {
+  return new Promise((resolve, reject) => {
+    if (!ffmpegPath) return reject(new Error('FFmpeg is not available for this platform'));
+    const codecArgs = videoCodecArgs(format.toLowerCase(), quality);
+    if (!codecArgs) return reject(new Error(`Unsupported video format: ${format}`));
+
+    const outputDir = path.dirname(outputPath);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    const crf = Math.round(51 - (quality / 100) * 51);
+    const args = [
+      '-hide_banner', '-nostdin', '-nostats', '-y',
+      '-protocol_whitelist', 'file',
+      '-format_whitelist', FFMPEG_INPUT_FORMATS,
+      // file: keeps names like "C:\..." or "x:y" from being read as protocols
+      '-i', `file:${inputPath}`,
+      ...codecArgs,
+      '-progress', 'pipe:1',
+      `file:${outputPath}`,
+    ];
 
-    let command = ffmpeg(inputPath);
+    const child = spawn(ffmpegPath, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    activeFfmpeg.add(child);
 
-    // Use faster preset and multi-threading for speed
-    const fastPreset = 'veryfast'; // ultrafast, superfast, veryfast, faster
-    const threads = 0; // 0 = auto-detect CPU cores
+    let durationSec = 0;
+    let lastPercent = -1;
+    let stderrTail = '';
+    let stdoutBuf = '';
 
-    switch (format.toLowerCase()) {
-      case 'mp4':
-        command = command.outputOptions([
-          '-c:v libx264',
-          `-crf ${crf}`,
-          `-preset ${fastPreset}`,
-          `-threads ${threads}`,
-          '-c:a aac',
-          '-b:a 128k'
-        ]);
-        break;
-      case 'webm':
-        command = command.outputOptions([
-          '-c:v libvpx-vp9',
-          `-crf ${crf}`,
-          '-b:v 0',
-          `-threads ${threads}`,
-          '-speed 4', // 0=slowest, 4=good balance, 8=fastest
-          '-c:a libopus',
-          '-b:a 128k'
-        ]);
-        break;
-      case 'avi':
-        command = command.outputOptions([
-          '-c:v mpeg4',
-          `-q:v ${Math.round((100 - quality) / 10) + 1}`,
-          `-threads ${threads}`,
-          '-c:a mp3',
-          '-b:a 128k'
-        ]);
-        break;
-      case 'mkv':
-        command = command.outputOptions([
-          '-c:v libx264',
-          `-crf ${crf}`,
-          `-preset ${fastPreset}`,
-          `-threads ${threads}`,
-          '-c:a aac',
-          '-b:a 128k'
-        ]);
-        break;
-      case 'mov':
-        command = command.outputOptions([
-          '-c:v libx264',
-          `-crf ${crf}`,
-          `-preset ${fastPreset}`,
-          `-threads ${threads}`,
-          '-c:a aac',
-          '-b:a 128k'
-        ]);
-        break;
-      case 'gif':
-        command = command.outputOptions([
-          '-vf fps=15,scale=480:-1:flags=lanczos',
-          '-c:v gif'
-        ]);
-        break;
-      default:
-        return reject(new Error(`Unsupported video format: ${format}`));
-    }
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk) => {
+      stderrTail = (stderrTail + chunk).slice(-4000);
+      if (!durationSec) {
+        const m = /Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/.exec(stderrTail);
+        if (m) durationSec = parseTimestamp(m[1], m[2], m[3]);
+      }
+    });
 
-    command
-      .output(outputPath)
-      .on('end', () => resolve({ success: true }))
-      .on('error', (err) => reject(err))
-      .run();
+    child.stdout.setEncoding('utf8');
+    child.stdout.on('data', (chunk) => {
+      stdoutBuf += chunk;
+      const lines = stdoutBuf.split('\n');
+      stdoutBuf = lines.pop();
+      for (const line of lines) {
+        const [key, value] = line.trim().split('=');
+        if (key === 'out_time_us' && durationSec > 0) {
+          const us = Number(value);
+          if (!Number.isFinite(us) || us < 0) continue;
+          const percent = Math.min(99, Math.floor((us / 1e6 / durationSec) * 100));
+          if (percent !== lastPercent) {
+            lastPercent = percent;
+            if (onProgress) onProgress(percent);
+          }
+        }
+      }
+    });
+
+    child.on('error', (err) => {
+      activeFfmpeg.delete(child);
+      reject(err);
+    });
+
+    child.on('close', (code, signal) => {
+      activeFfmpeg.delete(child);
+      if (child.cancelled) {
+        fs.rm(outputPath, { force: true }, () => {});
+        const err = new Error('Conversion cancelled');
+        err.cancelled = true;
+        return reject(err);
+      }
+      if (code === 0) {
+        if (onProgress) onProgress(100);
+        return resolve({ success: true });
+      }
+      fs.rm(outputPath, { force: true }, () => {});
+      const lastLines = stderrTail.trim().split('\n').slice(-3).join('\n');
+      reject(new Error(`ffmpeg exited with ${signal || `code ${code}`}: ${lastLines}`));
+    });
   });
 }
+
+function cancelAllFfmpeg() {
+  let count = 0;
+  for (const child of activeFfmpeg) {
+    child.cancelled = true;
+    child.kill('SIGKILL');
+    count++;
+  }
+  return count;
+}
+
+ipcMain.handle('cancel-conversion', async (event) => {
+  assertTrustedSender(event);
+  return { cancelled: cancelAllFfmpeg() };
+});
+
+app.on('before-quit', cancelAllFfmpeg);
 
 // ============= PDF CONVERSIONS =============
 async function convertPdfToDocx(inputPath, outputPath) {
@@ -727,7 +779,10 @@ ipcMain.handle('convert-file', async (event, options) => {
       return { success: true, outputPath, outputSize: stats.size };
     } 
     else if (videoExtensions.includes(ext)) {
-      await convertVideo(inputPath, outputPath, format, quality);
+      const sender = event.sender;
+      await convertVideo(inputPath, outputPath, format, quality, (percent) => {
+        if (!sender.isDestroyed()) sender.send('conversion-progress', { inputPath, percent });
+      });
       const stats = fs.statSync(outputPath);
       return { success: true, outputPath, outputSize: stats.size };
     }
@@ -744,6 +799,7 @@ ipcMain.handle('convert-file', async (event, options) => {
       return { success: false, error: 'Unsupported file type' };
     }
   } catch (error) {
+    if (error.cancelled) return { success: false, cancelled: true, error: 'Cancelled' };
     console.error('Conversion error:', error);
     return { success: false, error: error.message || 'Conversion failed' };
   }

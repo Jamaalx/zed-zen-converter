@@ -15,6 +15,7 @@ function FileList({ files, onRemove, onClearAll }) {
       case 'converting': return 'text-zedzen-yellow';
       case 'completed': return 'text-zedzen-green';
       case 'error': return 'text-red-500';
+      case 'cancelled': return 'text-gray-500';
       default: return 'text-gray-400';
     }
   };
@@ -87,6 +88,8 @@ function FileList({ files, onRemove, onClearAll }) {
                   </p>
                   <p className="text-sm text-gray-400">
                     {formatFileSize(file.size)} • {file.ext}
+                    {file.status === 'converting' && file.progress > 0 ? ` • ${file.progress}%` : ''}
+                    {file.status === 'cancelled' ? ' • cancelled' : ''}
                   </p>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Header from './components/Header';
 import FileDropzone from './components/FileDropzone';
 import ConversionPanel from './components/ConversionPanel';
@@ -30,6 +30,22 @@ function App() {
   const [resizeWidth, setResizeWidth] = useState(null);
   const [resizeHeight, setResizeHeight] = useState(null);
   const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
+  const cancelRequestedRef = useRef(false);
+
+  // live percentage for video conversions (sent by the main process)
+  useEffect(() => {
+    if (!window.electronAPI.onConversionProgress) return undefined;
+    return window.electronAPI.onConversionProgress(({ inputPath, percent }) => {
+      setFiles(prev => prev.map(f =>
+        f.path === inputPath && f.status === 'converting' ? { ...f, progress: percent } : f
+      ));
+    });
+  }, []);
+
+  const handleCancelConversion = async () => {
+    cancelRequestedRef.current = true;
+    await window.electronAPI.cancelConversion();
+  };
 
   const handleFilesAdded = async (newFiles) => {
     const fileInfoPromises = newFiles.map(async (filePath) => {
@@ -79,16 +95,22 @@ function App() {
     }
 
     setIsConverting(true);
+    cancelRequestedRef.current = false;
     
     let successCount = 0;
     let errorCount = 0;
+    let cancelled = false;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      if (cancelRequestedRef.current) {
+        cancelled = true;
+        break;
+      }
       
       // Update to converting
       setFiles(prev => prev.map((f, index) => 
-        index === i ? { ...f, status: 'converting', progress: 50 } : f
+        index === i ? { ...f, status: 'converting', progress: 0 } : f
       ));
       
       try {
@@ -121,6 +143,12 @@ function App() {
           
           // Track conversion for analytics
           analytics.incrementConversion();
+        } else if (result.cancelled) {
+          setFiles(prev => prev.map((f, index) =>
+            index === i ? { ...f, status: 'cancelled', progress: 0, error: 'Cancelled' } : f
+          ));
+          cancelled = true;
+          break;
         } else {
           // Error
           setFiles(prev => prev.map((f, index) => 
@@ -143,7 +171,9 @@ function App() {
     
     // Show completion message
     const action = compressionMode ? 'compressed' : 'converted';
-    if (errorCount === 0) {
+    if (cancelled) {
+      alert(`Conversion cancelled.\n${successCount} file${successCount === 1 ? '' : 's'} ${action} before cancelling.`);
+    } else if (errorCount === 0) {
       alert(`🎉 ${successCount} file${successCount > 1 ? 's' : ''} ${action} successfully!\n\nCheck your output folder: ${outputFolder}`);
     } else {
       alert(`⚠️ Completed with errors!\n✅ Success: ${successCount}\n❌ Failed: ${errorCount}`);
@@ -231,6 +261,7 @@ function App() {
             outputFolder={outputFolder}
             onSelectFolder={handleSelectOutputFolder}
             onStartConversion={handleStartConversion}
+            onCancelConversion={handleCancelConversion}
             isConverting={isConverting}
             fileCount={files.length}
             files={files}

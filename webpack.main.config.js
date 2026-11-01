@@ -4,7 +4,7 @@ module.exports = {
   externals: {
     'sharp': 'commonjs2 sharp',
     'pdf-parse': 'commonjs2 pdf-parse',
-    '@ffmpeg-installer/ffmpeg': 'commonjs2 @ffmpeg-installer/ffmpeg'
+    'ffmpeg-static': 'commonjs2 ffmpeg-static'
   },
   module: {
     rules: [

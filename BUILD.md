@@ -18,6 +18,14 @@ Aplicațiile **nesemnate digital** sunt considerate suspecte de:
 npm install
 ```
 
+FFmpeg vine din pachetul `ffmpeg-static`: scriptul lui de instalare descarcă
+binarul static pentru platforma pe care rulează `npm install`/`npm ci`
+(Windows x64 6.1.1 de la gyan.dev, Linux x64/arm64 7.0.2 de la johnvansickle.com,
+macOS x64 8.0 de la evermeet.cx, macOS arm64). De aceea fiecare platformă se construiește pe propriul OS (așa
+face și workflow-ul de release) și instalarea **nu** se face cu `--ignore-scripts`.
+Binarul e despachetat din `app.asar` (`app.asar.unpacked/node_modules/ffmpeg-static/`),
+altfel nu poate fi pornit. Windows arm64 nu are binar în `ffmpeg-static`.
+
 ### 2. Build fără Code Signing (pentru testare)
 
 ```bash

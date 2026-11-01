@@ -8,6 +8,7 @@ function ConversionPanel({
   outputFolder,
   onSelectFolder,
   onStartConversion,
+  onCancelConversion,
   isConverting,
   fileCount,
   files = [], // Add files prop to detect file types
@@ -363,6 +364,15 @@ function ConversionPanel({
           `Convert ${fileCount} ${fileCount === 1 ? 'File' : 'Files'}`
         )}
       </button>
+
+      {isConverting && onCancelConversion && (
+        <button
+          onClick={onCancelConversion}
+          className="w-full mt-2 py-2 rounded-lg font-semibold text-sm border border-red-500 text-red-400 hover:bg-red-900 hover:bg-opacity-20 transition-colors"
+        >
+          Cancel
+        </button>
+      )}
 
       {/* Info */}
       <div className="mt-4 p-3 bg-zedzen-purple bg-opacity-10 border border-zedzen-purple border-opacity-30 rounded-lg">

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security (2026-11-01, ffmpeg)
+- FFmpeg now comes from `ffmpeg-static` 5.3 (FFmpeg 6.1.1 on Windows, 7.0.2 on Linux, 8.0 on macOS x64; static builds from gyan.dev / johnvansickle.com / evermeet.cx) instead of `@ffmpeg-installer/ffmpeg` 1.1, which shipped a 2018 FFmpeg 4.1 build and is unmaintained. FFmpeg parses untrusted media, so the old build carried years of unfixed demuxer/decoder CVEs.
+- ffmpeg is restricted to the container demuxers the app accepts (`-format_whitelist mov,mp4,matroska,webm,avi,flv,asf`) and to the `file` protocol, and paths are passed as `file:` URLs: a renamed concat list or playlist can no longer make ffmpeg read other local files or URLs.
+
+### Changed (2026-11-01, ffmpeg)
+- `fluent-ffmpeg` (deprecated, archived upstream) removed: ffmpeg is spawned directly with an argument array (no shell). Same output formats and encoder settings (MP4/MKV/MOV H.264+AAC, WebM VP9+Opus, AVI MPEG-4+MP3, GIF).
+- Video conversions report progress (`-progress pipe:1`, shown as a percentage in the file list) and can be cancelled (new Cancel button; the partial output file is deleted). Running ffmpeg processes are killed when the app quits.
+- Build: `ffmpeg-static` downloads the binary for the host platform during `npm install`/`npm ci` (no `--ignore-scripts`); Windows arm64 has no binary.
+
 ### Changed (2026-11-01, lint)
 - ESLint 9 -> 10. `eslint-plugin-react` (peer range stops at ESLint 9) replaced by `@eslint-react/eslint-plugin` 5 (recommended preset plus `dom-no-unknown-property`, `dom-no-unsafe-target-blank`, `no-missing-component-display-name`); ESLint 10 tracks JSX references itself, which replaces `jsx-uses-vars`/`jsx-no-undef`. Config is now `eslint.config.mjs`. This also fixes `npm ci` on `main`, which failed with ERESOLVE after Dependabot bumped `@eslint/js` to 10 while `eslint` was held on 9.
 - Rethrown conversion errors keep the original error as `cause` (`preserve-caught-error`, new in `@eslint/js` 10).

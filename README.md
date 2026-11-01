@@ -79,7 +79,7 @@ Some antivirus software may flag this application because:
 | UI | [React](https://react.dev/) 18.3.1 | User interface |
 | Styling | [Tailwind CSS](https://tailwindcss.com/) 3.4.17 | Modern CSS |
 | Images | [Sharp](https://sharp.pixelplumbing.com/) 0.35 | Image processing |
-| Video | [FFmpeg](https://ffmpeg.org/) | Video processing |
+| Video | [FFmpeg](https://ffmpeg.org/) static builds (6.1 Windows, 7.0 Linux, 8.0 macOS x64) via [ffmpeg-static](https://github.com/eugeneware/ffmpeg-static) | Video processing (spawned directly, no wrapper library) |
 | PDF | [pdf-lib](https://pdf-lib.js.org/) 1.17.1 | PDF manipulation |
 | Documents | [mammoth](https://github.com/mwilliamson/mammoth.js), [docx](https://docx.js.org/) | Document conversion |
 
@@ -92,7 +92,7 @@ All dependencies are open source, actively maintained, and used by millions of d
 ### Prerequisites
 
 - Node.js 20 or newer (CI uses Node 22)
-- FFmpeg is bundled via `@ffmpeg-installer/ffmpeg`, no system install needed
+- FFmpeg is bundled via [`ffmpeg-static`](https://github.com/eugeneware/ffmpeg-static) (downloaded for your platform during `npm install`, so don't use `--ignore-scripts`); no system install needed. Supported: Windows x64, macOS x64/arm64, Linux x64/arm64
 
 ### From Source
 

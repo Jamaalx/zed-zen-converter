@@ -16,7 +16,7 @@ This document explains the technology stack, security measures, and why this app
 | **UI Framework** | [React](https://react.dev/) | 18.3.1 | User interface | 25M+ |
 | **Styling** | [Tailwind CSS](https://tailwindcss.com/) | 3.4.17 | Modern styling | 10M+ |
 | **Image Processing** | [Sharp](https://sharp.pixelplumbing.com/) | 0.35.4 | Image conversion | 6M+ |
-| **Video Processing** | [FFmpeg](https://ffmpeg.org/) via fluent-ffmpeg | 2.1.3 | Video conversion | 500K+ |
+| **Video Processing** | [FFmpeg](https://ffmpeg.org/) static build via ffmpeg-static (spawned directly, demuxer/protocol whitelist) | 5.3.0 (FFmpeg 6.1.1 Windows, 7.0.2 Linux, 8.0 macOS x64) | Video conversion | 3M+ |
 | **PDF Processing** | [pdf-lib](https://pdf-lib.js.org/) | 1.17.1 | PDF manipulation | 1M+ |
 | **Document Processing** | [mammoth](https://github.com/mwilliamson/mammoth.js) | 1.11.0 | DOCX reading | 300K+ |
 | **Document Creation** | [docx](https://docx.js.org/) | 9.5.1 | DOCX creation | 200K+ |

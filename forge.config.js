@@ -32,7 +32,7 @@ module.exports = {
     asar: {
       // native code must live outside the asar: sharp's .node files and the
       // ffmpeg executable (child_process cannot spawn a file inside app.asar)
-      unpack: '**/node_modules/{sharp,@img,@ffmpeg-installer}/**/*'
+      unpack: '**/node_modules/{sharp,@img,ffmpeg-static}/**/*'
     },
     name: 'ZED-ZEN Media Converter',
     executableName: 'ZedZen-Converter',
@@ -52,7 +52,7 @@ module.exports = {
       console.log('Copying Sharp, FFmpeg, and PDF dependencies...');
 
       // Also copy ffmpeg and pdf-parse dependencies explicitly
-      const criticalModules = ['sharp', '@ffmpeg-installer', 'pdf-parse'];
+      const criticalModules = ['sharp', 'ffmpeg-static', 'pdf-parse'];
 
       // Function to recursively get all dependencies from package.json
       const getAllDependencies = (moduleName, visited = new Set()) => {
@@ -98,7 +98,7 @@ module.exports = {
           fs.cpSync(srcModule, destModule, {
             recursive: true,
             // never ship stray dotfiles / editor backups from upstream packages
-            // (@ffmpeg-installer/ffmpeg publishes a .env with an npm token)
+            // (@ffmpeg-installer/ffmpeg used to publish a .env with an npm token)
             filter: (src) => {
               const base = path.basename(src);
               // .bin holds symlinks that point outside the app; asar rejects them
