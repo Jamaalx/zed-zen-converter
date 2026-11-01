@@ -18,6 +18,12 @@ updates:
       # (breaks `electron-forge package`); held at ~9.5.3, see CHANGELOG.md
       - dependency-name: docx
         versions: [">=9.6.0"]
+      # Held with a reason (2026-11 maintenance): Tailwind 4 needs the config
+      # moved to CSS; eslint-plugin-react 7.37.5 supports ESLint up to 9 only.
+      - dependency-name: tailwindcss
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
