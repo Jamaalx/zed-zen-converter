@@ -54,7 +54,7 @@
     "autoprefixer": "^10.4.20",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
-    "electron": "44.4.5",
+    "electron": "44.10.1",
     "electron-builder": "^26.15.3",
     "electron-winstaller": "^5.4.4",
     "eslint": "^9.39.5",
