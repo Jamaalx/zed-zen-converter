@@ -20,7 +20,7 @@ try {
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
-const pdfParse = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 const mammoth = require('mammoth');
 const { Document, Packer, Paragraph, TextRun } = require('docx');
 
@@ -513,9 +513,15 @@ async function convertPdfToDocx(inputPath, outputPath) {
   try {
     const pdfBytes = fs.readFileSync(inputPath);
 
-    // Extract text from PDF using pdf-parse
-    const pdfData = await pdfParse(pdfBytes);
-    const extractedText = pdfData.text || 'No text could be extracted from this PDF';
+    // Extract text from PDF using pdf-parse (v2, current pdf.js)
+    const parser = new PDFParse({ data: pdfBytes });
+    let extractedText;
+    try {
+      const result = await parser.getText({ pageJoiner: '' });
+      extractedText = result.text.trim() || 'No text could be extracted from this PDF';
+    } finally {
+      await parser.destroy();
+    }
 
     // Create DOCX with extracted text
     const paragraphs = extractedText.split('\n\n').map(para =>
