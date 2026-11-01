@@ -41,7 +41,14 @@ function App() {
       };
     });
     
-    const fileInfos = await Promise.all(fileInfoPromises);
+    // a dropped folder or a file that vanished must not drop the whole batch
+    const results = await Promise.allSettled(fileInfoPromises);
+    const fileInfos = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value);
+    results
+      .filter(r => r.status === 'rejected')
+      .forEach(r => console.warn('Skipped file:', r.reason && r.reason.message));
     setFiles(prev => [...prev, ...fileInfos]);
   };
 

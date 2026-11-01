@@ -21,8 +21,12 @@ function FileDropzone({ onFilesAdded }) {
     setIsDragging(false);
 
     const files = Array.from(e.dataTransfer.files);
-    const filePaths = files.map(file => file.path);
-    onFilesAdded(filePaths);
+    const filePaths = files
+      .map(file => window.electronAPI.getPathForFile(file))
+      .filter(Boolean);
+    if (filePaths.length > 0) {
+      onFilesAdded(filePaths);
+    }
   }, [onFilesAdded]);
 
   const handleClick = async () => {
