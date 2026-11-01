@@ -96,10 +96,23 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      sandbox: true,
+      webSecurity: true,
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
     titleBarStyle: 'default',
     frame: true,
+  });
+
+  // The window only ever shows our own bundle. Links that try to open a new
+  // window go to the system browser (https only); in-page navigation away from
+  // the app is blocked.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    openExternalSafe(url);
+    return { action: 'deny' };
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url !== mainWindow.webContents.getURL()) event.preventDefault();
   });
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
@@ -123,12 +136,104 @@ app.on('activate', () => {
   }
 });
 
+// ============= IPC INPUT VALIDATION =============
+// The renderer is our own code, but treat everything it sends as untrusted:
+// a renderer compromise (e.g. a malicious file name rendered somewhere) must
+// not turn into arbitrary file writes or program execution.
+
+const IMAGE_OUTPUT_FORMATS = ['webp', 'jpg', 'jpeg', 'png', 'avif', 'bmp', 'svg', 'gif', 'tiff'];
+const VIDEO_OUTPUT_FORMATS = ['mp4', 'webm', 'avi', 'mkv', 'mov', 'gif'];
+const DOC_OUTPUT_FORMATS = ['pdf', 'docx', 'txt'];
+const ALLOWED_OUTPUT_FORMATS = new Set([...IMAGE_OUTPUT_FORMATS, ...VIDEO_OUTPUT_FORMATS, ...DOC_OUTPUT_FORMATS]);
+
+function isTrustedSender(event) {
+  const url = event.senderFrame && event.senderFrame.url;
+  if (!url) return false;
+  try {
+    const sender = new URL(url);
+    const app = new URL(MAIN_WINDOW_WEBPACK_ENTRY);
+    // packaged: file:// (origin is the opaque "null"), so compare the file itself
+    if (app.protocol === 'file:') return sender.protocol === 'file:' && sender.pathname === app.pathname;
+    return sender.origin === app.origin;
+  } catch {
+    return false;
+  }
+}
+
+function assertTrustedSender(event) {
+  if (!isTrustedSender(event)) throw new Error('Untrusted IPC sender');
+}
+
+function requireAbsolutePath(value, what) {
+  if (typeof value !== 'string' || value.length === 0 || value.includes('\0') || !path.isAbsolute(value)) {
+    throw new Error(`Invalid ${what}`);
+  }
+  return path.resolve(value);
+}
+
+function requireExistingFile(value, what = 'input file') {
+  const resolved = requireAbsolutePath(value, what);
+  let stats;
+  try {
+    stats = fs.statSync(resolved);
+  } catch {
+    throw new Error(`${what} does not exist`);
+  }
+  if (!stats.isFile()) throw new Error(`${what} is not a file`);
+  return resolved;
+}
+
+function clampQuality(value) {
+  const q = Math.round(Number(value));
+  if (!Number.isFinite(q)) return 80;
+  return Math.min(100, Math.max(1, q));
+}
+
+function sanitizeResize(resize) {
+  if (!resize || typeof resize !== 'object') return null;
+  const dim = (v) => {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) && n >= 1 && n <= 16384 ? n : null;
+  };
+  const width = dim(resize.width);
+  const height = dim(resize.height);
+  if (!width && !height) return null;
+  return { width, height, maintainAspectRatio: Boolean(resize.maintainAspectRatio) };
+}
+
+// Only web links and mail drafts go to the OS; never file:, smb:, custom
+// protocol handlers etc., which can launch local programs.
+function openExternalSafe(url) {
+  let parsed;
+  try {
+    parsed = new URL(String(url));
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'mailto:') return false;
+  shell.openExternal(parsed.toString());
+  return true;
+}
+
 // IPC Handlers
 
+ipcMain.handle('open-external', async (event, url) => {
+  assertTrustedSender(event);
+  return { success: openExternalSafe(url) };
+});
+
 ipcMain.handle('open-folder', async (event, folderPath) => {
-  if (folderPath && fs.existsSync(folderPath)) {
-    shell.openPath(folderPath);
-    return { success: true };
+  assertTrustedSender(event);
+  // shell.openPath() on a file would *run* it (e.g. an .exe), so only
+  // existing directories are accepted here.
+  try {
+    const resolved = requireAbsolutePath(folderPath, 'folder');
+    if (fs.statSync(resolved).isDirectory()) {
+      const error = await shell.openPath(resolved);
+      return error ? { success: false, error } : { success: true };
+    }
+  } catch {
+    // fall through
   }
   return { success: false, error: 'Folder does not exist' };
 });
@@ -154,12 +259,14 @@ ipcMain.handle('select-folder', async () => {
 });
 
 ipcMain.handle('get-file-info', async (event, filePath) => {
-  const stats = fs.statSync(filePath);
+  assertTrustedSender(event);
+  const resolved = requireExistingFile(filePath, 'file');
+  const stats = fs.statSync(resolved);
   return {
-    name: path.basename(filePath),
+    name: path.basename(resolved),
     size: stats.size,
-    path: filePath,
-    ext: path.extname(filePath).toLowerCase()
+    path: resolved,
+    ext: path.extname(resolved).toLowerCase()
   };
 });
 
@@ -538,9 +645,18 @@ async function getPdfPageCount(inputPath) {
 
 // ============= MAIN CONVERSION HANDLER =============
 ipcMain.handle('convert-file', async (event, options) => {
-  const { inputPath, outputFolder, format, quality, resize } = options;
-
   try {
+    assertTrustedSender(event);
+    if (!options || typeof options !== 'object') throw new Error('Invalid options');
+    const inputPath = requireExistingFile(options.inputPath);
+    const outputFolder = requireAbsolutePath(options.outputFolder, 'output folder');
+    const format = String(options.format || '').toLowerCase();
+    // The format ends up in the output file name: a whitelist keeps values
+    // like "../../x" from writing outside the chosen folder.
+    if (!ALLOWED_OUTPUT_FORMATS.has(format)) throw new Error(`Unsupported output format: ${format}`);
+    const quality = clampQuality(options.quality);
+    const resize = sanitizeResize(options.resize);
+
     const baseName = path.basename(inputPath, path.extname(inputPath));
     let outputPath = path.join(outputFolder, `${baseName}.${format}`);
     // Same folder + same format (e.g. JPG -> JPG to compress/resize): never
@@ -585,9 +701,12 @@ ipcMain.handle('convert-file', async (event, options) => {
 
 // ============= PDF SPLIT HANDLERS =============
 ipcMain.handle('split-pdf', async (event, options) => {
-  const { inputPath, outputFolder, pagesPerSplit } = options;
   try {
-    const result = await splitPdf(inputPath, outputFolder, pagesPerSplit);
+    assertTrustedSender(event);
+    if (!options || typeof options !== 'object') throw new Error('Invalid options');
+    const inputPath = requireExistingFile(options.inputPath, 'PDF file');
+    const outputFolder = requireAbsolutePath(options.outputFolder, 'output folder');
+    const result = await splitPdf(inputPath, outputFolder, options.pagesPerSplit);
     return result;
   } catch (error) {
     console.error('PDF split error:', error);
@@ -596,7 +715,12 @@ ipcMain.handle('split-pdf', async (event, options) => {
 });
 
 ipcMain.handle('get-pdf-page-count', async (event, filePath) => {
-  return await getPdfPageCount(filePath);
+  try {
+    assertTrustedSender(event);
+    return await getPdfPageCount(requireExistingFile(filePath, 'PDF file'));
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });
 
 ipcMain.handle('select-pdf-file', async () => {
