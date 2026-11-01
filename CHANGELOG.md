@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security (2026-11-01)
+- IPC hardening: `openExternal` goes through the main process and only opens `https:`/`mailto:` URLs; `open-folder` only opens directories (`shell.openPath` on a file runs it); conversion/split handlers require absolute paths to existing files, whitelist the output format (it was used in the output file name, allowing `../` paths) and clamp quality/resize; privileged handlers check the sender frame.
+- `BrowserWindow`: `sandbox`/`webSecurity` explicit, `window.open` denied (links go to the system browser), navigation away from the app blocked.
+- Packaged builds no longer contain the `.env` file (with an npm token) that `@ffmpeg-installer/ffmpeg` publishes.
+- Electron 44.4.5 -> 44.10.1 (eMudhra intermediate certificates, pointer-lock permission frame attribution), sharp 0.35.5 (librsvg CVE), lockfile refresh for fast-uri, undici, launch-editor, shell-quote, source-map-js, body-parser, qs, ip-address, postcss-selector-parser.
+
+### Fixed (2026-11-01)
+- Video conversion never worked in the packaged app: the ffmpeg binary was inside `app.asar` and could not be spawned; it is now asar-unpacked.
+- Drag & drop added no files since Electron 32 (`File.path` removed); uses `webUtils.getPathForFile()`.
+- BMP output always failed (libvips has no BMP writer); BMP is now encoded directly. Compress mode works for GIF and TIFF.
+- PDF -> DOCX failed with "Invalid PDF structure" on PDFs with compressed object streams (pdf-parse 1.x bundled pdf.js 1.10); now pdf-parse 2.
+- Release workflow: Windows job generates the icon, and one `release` job attaches all artifacts (the 2026-09-24 entry below described this, but it had not been committed).
+
+### Changed (2026-11-01)
+- React 19.3, Babel 8, Electron Forge 8 (`main` is `.webpack/main/index.cjs`, `@electron/fuses` 2), pdf-parse 2.4, mammoth 1.13, electron-builder 26.18, webpack-dev-server 6.1.
+- GitHub Actions: checkout v7, setup-node v7, upload-artifact v7, download-artifact v8, action-gh-release v3.0.3.
+
+### Removed (2026-11-01)
+- Unused dependencies `@electron/remote`, `officegen`, `pdf2pic`.
+
 ### Fixed (2026-09-24)
 - TXT/DOCX -> PDF: text after the first page was drawn over page 1 and the extra pages stayed blank; lines were cut at 80 characters; any character outside WinAnsi (e.g. Romanian `ș`/`ț`) made the conversion fail. Now wraps, paginates and substitutes unencodable characters.
 - Converting into the source folder with the same format no longer targets the input file itself (writes `<name>_converted.<ext>`).
