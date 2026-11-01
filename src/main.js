@@ -75,8 +75,14 @@ if (process.platform === 'win32') {
   }
 }
 
-// Set FFmpeg path for video conversions using @ffmpeg-installer/ffmpeg
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+// Set FFmpeg path for video conversions using @ffmpeg-installer/ffmpeg.
+// In the packaged app the binary is unpacked next to app.asar (see
+// forge.config.js); a path inside app.asar cannot be spawned.
+const ffmpegPath = ffmpegInstaller.path.replace(
+  `app.asar${path.sep}`,
+  `app.asar.unpacked${path.sep}`
+);
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 let mainWindow;
 
@@ -168,7 +174,7 @@ ipcMain.handle('get-system-info', async () => {
     platform: os.platform(),
     arch: os.arch(),
     osVersion: os.release(),
-    ffmpegPath: ffmpegInstaller.path,
+    ffmpegPath,
     sharpVersion: `libvips ${sharp.versions.vips}`,
   };
 });

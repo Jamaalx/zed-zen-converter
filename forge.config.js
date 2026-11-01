@@ -30,7 +30,9 @@ const isCodeSigningEnabled = process.env.WINDOWS_CERTIFICATE_FILE && process.env
 module.exports = {
   packagerConfig: {
     asar: {
-      unpack: '**/node_modules/{sharp,@img}/**/*'
+      // native code must live outside the asar: sharp's .node files and the
+      // ffmpeg executable (child_process cannot spawn a file inside app.asar)
+      unpack: '**/node_modules/{sharp,@img,@ffmpeg-installer}/**/*'
     },
     name: 'ZED-ZEN Media Converter',
     executableName: 'ZedZen-Converter',
@@ -93,7 +95,15 @@ module.exports = {
         const destModule = path.join(buildPath, 'node_modules', moduleName);
 
         if (fs.existsSync(srcModule)) {
-          fs.cpSync(srcModule, destModule, { recursive: true });
+          fs.cpSync(srcModule, destModule, {
+            recursive: true,
+            // never ship stray dotfiles / editor backups from upstream packages
+            // (@ffmpeg-installer/ffmpeg publishes a .env with an npm token)
+            filter: (src) => {
+              const base = path.basename(src);
+              return base !== '.env' && !base.endsWith('~');
+            },
+          });
           copiedCount++;
         }
       }
