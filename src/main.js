@@ -287,6 +287,41 @@ ipcMain.handle('get-system-info', async () => {
 });
 
 // ============= IMAGE CONVERSION =============
+// sharp/libvips cannot write BMP, so encode a plain 24-bit BMP from raw RGB.
+async function writeBmp(sharpInstance, outputPath) {
+  const { data, info } = await sharpInstance
+    .flatten({ background: '#ffffff' })
+    .removeAlpha()
+    .toColourspace('srgb')
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const { width, height } = info;
+  const rowSize = Math.ceil((width * 3) / 4) * 4;
+  const pixelBytes = rowSize * height;
+  const out = Buffer.alloc(54 + pixelBytes);
+  out.write('BM', 0, 'ascii');
+  out.writeUInt32LE(54 + pixelBytes, 2);
+  out.writeUInt32LE(54, 10);
+  out.writeUInt32LE(40, 14);
+  out.writeInt32LE(width, 18);
+  out.writeInt32LE(height, 22); // positive height = bottom-up rows
+  out.writeUInt16LE(1, 26);
+  out.writeUInt16LE(24, 28);
+  out.writeUInt32LE(pixelBytes, 34);
+  out.writeInt32LE(2835, 38); // 72 dpi
+  out.writeInt32LE(2835, 42);
+  for (let y = 0; y < height; y++) {
+    const src = (height - 1 - y) * width * 3;
+    const dst = 54 + y * rowSize;
+    for (let x = 0; x < width; x++) {
+      out[dst + x * 3] = data[src + x * 3 + 2];
+      out[dst + x * 3 + 1] = data[src + x * 3 + 1];
+      out[dst + x * 3 + 2] = data[src + x * 3];
+    }
+  }
+  fs.writeFileSync(outputPath, out);
+}
+
 async function convertImage(inputPath, outputPath, format, quality, resize = null) {
   try {
     const outputDir = path.dirname(outputPath);
@@ -326,6 +361,9 @@ async function convertImage(inputPath, outputPath, format, quality, resize = nul
         case 'webp':
           await sharpInstance.webp({ quality }).toFile(outputPath);
           break;
+        case 'bmp':
+          await writeBmp(sharpInstance, outputPath);
+          break;
         default:
           await sharpInstance.toFile(outputPath);
       }
@@ -362,7 +400,13 @@ async function convertImage(inputPath, outputPath, format, quality, resize = nul
         sharpInstance = sharpInstance.avif({ quality });
         break;
       case 'bmp':
-        sharpInstance = sharpInstance.toFormat('bmp');
+        await writeBmp(sharpInstance, outputPath);
+        return { success: true };
+      case 'gif':
+        sharpInstance = sharpInstance.gif();
+        break;
+      case 'tiff':
+        sharpInstance = sharpInstance.tiff({ quality });
         break;
       case 'svg':
         throw new Error('Cannot convert raster images (PNG, JPG, etc.) to vector SVG format. SVG can only be created from vector sources or through manual tracing.');
