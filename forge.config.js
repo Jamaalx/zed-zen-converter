@@ -101,7 +101,8 @@ module.exports = {
             // (@ffmpeg-installer/ffmpeg publishes a .env with an npm token)
             filter: (src) => {
               const base = path.basename(src);
-              return base !== '.env' && !base.endsWith('~');
+              // .bin holds symlinks that point outside the app; asar rejects them
+              return base !== '.env' && base !== '.bin' && !base.endsWith('~');
             },
           });
           copiedCount++;
