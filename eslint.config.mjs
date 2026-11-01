@@ -1,10 +1,12 @@
-const js = require('@eslint/js');
-const react = require('eslint-plugin-react');
-const globals = require('globals');
+import js from '@eslint/js';
+import eslintReact from '@eslint-react/eslint-plugin';
+import globals from 'globals';
 
-module.exports = [
+// ESLint 10 tracks JSX references itself (core no-undef / no-unused-vars see
+// <Component />), so the jsx-uses-vars / jsx-no-undef shims are not needed.
+export default [
   {
-    ignores: ['node_modules/**', 'out/**', 'dist/**', '.webpack/**', '.vite/**'],
+    ignores: ['node_modules/**', 'out/**', 'dist/**', '.webpack/**', '.vite/**', '.wolf/**', '.claude/**'],
   },
   js.configs.recommended,
   {
@@ -30,14 +32,18 @@ module.exports = [
     // Renderer side (bundled by webpack as ES modules): React components + utils
     files: ['src/**/*.{js,jsx}'],
     ignores: ['src/main.js', 'src/preload.js'],
-    languageOptions: { sourceType: 'module' },
-    plugins: { react },
-    settings: { react: { version: 'detect' } },
+    ...eslintReact.configs.recommended,
+    languageOptions: {
+      ...eslintReact.configs.recommended.languageOptions,
+      sourceType: 'module',
+    },
     rules: {
-      ...react.configs.flat.recommended.rules,
-      ...react.configs.flat['jsx-runtime'].rules,
-      'react/prop-types': 'off',
-      'react/no-unescaped-entities': 'off',
+      ...eslintReact.configs.recommended.rules,
+      // eslint-plugin-react's recommended set had these; @eslint-react keeps
+      // them outside its recommended preset
+      '@eslint-react/dom-no-unknown-property': 'error',
+      '@eslint-react/dom-no-unsafe-target-blank': 'error',
+      '@eslint-react/no-missing-component-display-name': 'error',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^React$', caughtErrors: 'none' }],
     },
   },

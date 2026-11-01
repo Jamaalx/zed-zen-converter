@@ -542,7 +542,7 @@ async function convertPdfToDocx(inputPath, outputPath) {
     fs.writeFileSync(outputPath, buffer);
     return { success: true };
   } catch (error) {
-    throw new Error(`PDF to DOCX conversion failed: ${error.message}`);
+    throw new Error(`PDF to DOCX conversion failed: ${error.message}`, { cause: error });
   }
 }
 
@@ -612,7 +612,7 @@ async function convertDocxToPdf(inputPath, outputPath) {
     await textToPdf(result.value, outputPath);
     return { success: true };
   } catch (error) {
-    throw new Error(`DOCX to PDF conversion failed: ${error.message}`);
+    throw new Error(`DOCX to PDF conversion failed: ${error.message}`, { cause: error });
   }
 }
 
@@ -622,7 +622,7 @@ async function convertTxtToPdf(inputPath, outputPath) {
     await textToPdf(text, outputPath);
     return { success: true };
   } catch (error) {
-    throw new Error(`TXT to PDF conversion failed: ${error.message}`);
+    throw new Error(`TXT to PDF conversion failed: ${error.message}`, { cause: error });
   }
 }
 
@@ -678,7 +678,7 @@ async function splitPdf(inputPath, outputFolder, pagesPerSplit) {
     };
   } catch (error) {
     console.error('PDF split error:', error);
-    throw new Error(`PDF split failed: ${error.message}`);
+    throw new Error(`PDF split failed: ${error.message}`, { cause: error });
   }
 }
 

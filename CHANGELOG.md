@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-11-01, lint)
+- ESLint 9 -> 10. `eslint-plugin-react` (peer range stops at ESLint 9) replaced by `@eslint-react/eslint-plugin` 5 (recommended preset plus `dom-no-unknown-property`, `dom-no-unsafe-target-blank`, `no-missing-component-display-name`); ESLint 10 tracks JSX references itself, which replaces `jsx-uses-vars`/`jsx-no-undef`. Config is now `eslint.config.mjs`. This also fixes `npm ci` on `main`, which failed with ERESOLVE after Dependabot bumped `@eslint/js` to 10 while `eslint` was held on 9.
+- Rethrown conversion errors keep the original error as `cause` (`preserve-caught-error`, new in `@eslint/js` 10).
+
 ### Security (2026-11-01)
 - IPC hardening: `openExternal` goes through the main process and only opens `https:`/`mailto:` URLs; `open-folder` only opens directories (`shell.openPath` on a file runs it); conversion/split handlers require absolute paths to existing files, whitelist the output format (it was used in the output file name, allowing `../` paths) and clamp quality/resize; privileged handlers check the sender frame.
 - `BrowserWindow`: `sandbox`/`webSecurity` explicit, `window.open` denied (links go to the system browser), navigation away from the app blocked.
